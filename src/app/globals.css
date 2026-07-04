@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Satoshi", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Instrument Serif", ui-serif, Georgia, serif;
+
+  --color-sand: #E5E1D8;
+  --color-sand-light: #F4F2EE;
+  --color-earth: #4A443B;
+  --color-earth-dark: #2C2822;
+  --color-sage: #8A9286;
+  --color-sage-light: #D5D8D3;
+}
+
+/* ─── Page Transitions (handled by PageTransition.tsx) ─────────── */
+
+/* ─── Base Typography ──────────────────────────────────────────── */
+
+@layer base {
+  body {
+    @apply font-sans bg-sand-light text-earth-dark antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+
+  h1 { letter-spacing: -0.035em; }
+  h2 { letter-spacing: -0.03em; }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Smoother text rendering for light-on-dark */
+  .text-white, .text-sand-light, [class*="text-white/"] {
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* ─── Glassmorphism ────────────────────────────────────────────── */
+
+.glass {
+  @apply bg-white/60 backdrop-blur-lg border border-white/40 shadow-lg;
+}
+
+.glass-dark {
+  @apply bg-black/40 backdrop-blur-lg border border-white/10 shadow-lg;
+}
+
+/* ─── Utilities ────────────────────────────────────────────────── */
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* ─── Selection ────────────────────────────────────────────────── */
+
+::selection {
+  background-color: #4A443B;
+  color: #F4F2EE;
+}

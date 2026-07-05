@@ -63,7 +63,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <div className="min-h-screen bg-sand-light text-earth-dark selection:bg-earth selection:text-sand-light overflow-x-hidden">
+      <div className="min-h-screen bg-sand-light text-earth-dark selection:bg-earth selection:text-sand-light overflow-x-clip">
         <Navbar />
         <Hero />
         <Categories />

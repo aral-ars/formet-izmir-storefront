@@ -7,11 +7,11 @@ export function Reviews() {
   return (
     <section id="reviews" className="py-24 px-6 lg:px-8 max-w-7xl mx-auto border-t border-earth/5">
       <div className="text-center mb-16">
-        <TextReveal as="h2" className="text-3xl md:text-5xl font-display font-semibold mb-4" accentWords={['experiences']}>
-          Client Experiences
+        <TextReveal as="h2" className="text-3xl md:text-5xl font-display font-semibold mb-4" accentWords={['Deneyimleri']}>
+          Müşteri Deneyimleri
         </TextReveal>
         <LineReveal className="text-lg text-earth/80 max-w-2xl mx-auto tracking-wide" delay={0.2}>
-          Hear what our customers have to say about our outdoor furniture collections.
+          Müşterilerimizin dış mekan mobilya koleksiyonlarımız hakkında neler söylediğini dinleyin.
         </LineReveal>
       </div>
 

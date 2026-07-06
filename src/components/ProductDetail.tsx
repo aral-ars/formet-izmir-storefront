@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MessageCircle, ChevronRight, Plus, ArrowLeft, Check, Share2, Heart } from 'lucide-react';
 import { PRODUCTS, type Product } from '../data';
@@ -15,6 +15,28 @@ interface ProductDetailClientProps {
 export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const scrollLeft = e.currentTarget.scrollLeft;
+    const width = e.currentTarget.clientWidth;
+    const newIndex = Math.round(scrollLeft / width);
+    if (newIndex !== activeImageIndex) {
+      setActiveImageIndex(newIndex);
+    }
+  };
+
+  const handleThumbnailClick = (index: number) => {
+    setActiveImageIndex(index);
+    if (carouselRef.current) {
+      const scrollWidth = carouselRef.current.scrollWidth;
+      const indexWidth = scrollWidth / (product.images.length || 1);
+      carouselRef.current.scrollTo({
+        left: index * indexWidth,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   const relatedProducts = PRODUCTS.filter(
     (p) => p.category === product.category && p.id !== product.id
@@ -44,22 +66,22 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
       <ProductsNavbar />
 
       {/* Breadcrumb */}
-      <div className="pt-28 sm:pt-32 px-6 lg:px-8">
+      <div className="pt-20 sm:pt-32 px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <motion.nav
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="flex items-center gap-2 text-sm text-earth/50"
+            className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-earth/50"
           >
             <TransitionLink href="/" className="hover:text-earth transition-colors">
-              Home
+              Anasayfa
             </TransitionLink>
-            <ChevronRight className="w-3.5 h-3.5" />
+            <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             <TransitionLink href="/products" className="hover:text-earth transition-colors">
-              Products
+              Ürünler
             </TransitionLink>
-            <ChevronRight className="w-3.5 h-3.5" />
+            <ChevronRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             <span className="text-earth-dark font-medium truncate max-w-[200px]">
               {product.name}
             </span>
@@ -79,19 +101,22 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               className="w-full lg:w-[58%] flex flex-col gap-4"
             >
               {/* Main Image */}
-              <div className="relative aspect-[4/3] lg:aspect-[5/4] rounded-3xl overflow-hidden bg-sand">
-                <AnimatePresence mode="wait">
-                  <motion.img
-                    key={activeImageIndex}
-                    src={product.images[activeImageIndex]}
-                    alt={`${product.name} — view ${activeImageIndex + 1}`}
-                    initial={{ opacity: 0, scale: 1.04 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.98 }}
-                    transition={{ duration: 0.4, ease: 'easeOut' }}
-                    className="w-full h-full object-cover object-center"
-                  />
-                </AnimatePresence>
+              <div className="relative aspect-[4/5] sm:aspect-[4/3] lg:aspect-[5/4] rounded-3xl overflow-hidden bg-sand">
+                <div 
+                  ref={carouselRef}
+                  onScroll={handleScroll}
+                  className="flex overflow-x-auto snap-x snap-mandatory w-full h-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                >
+                  {product.images.map((img, idx) => (
+                    <div key={idx} className="w-full h-full flex-shrink-0 snap-center relative">
+                      <img 
+                        src={img} 
+                        alt={`${product.name} — view ${idx + 1}`}
+                        className="w-full h-full object-cover object-center"
+                      />
+                    </div>
+                  ))}
+                </div>
 
                 {/* Tag badge */}
                 <div className="absolute top-5 left-5 glass px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide">
@@ -105,15 +130,14 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                       e.stopPropagation();
                       setIsWishlisted(!isWishlisted);
                     }}
-                    className={`p-3 rounded-full backdrop-blur-md shadow-lg transition-all cursor-pointer ${
-                      isWishlisted
+                    className={`p-2.5 rounded-full backdrop-blur-md shadow-lg transition-all cursor-pointer ${isWishlisted
                         ? 'bg-rose-500 text-white'
                         : 'bg-white/70 text-earth-dark hover:bg-white'
-                    }`}
+                      }`}
                     aria-label="Add to wishlist"
                   >
                     <Heart
-                      className="w-5 h-5"
+                      className="w-4 h-4"
                       fill={isWishlisted ? 'currentColor' : 'none'}
                     />
                   </button>
@@ -122,10 +146,10 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                       e.stopPropagation();
                       handleShare();
                     }}
-                    className="p-3 bg-white/70 backdrop-blur-md rounded-full shadow-lg text-earth-dark hover:bg-white transition-all cursor-pointer"
+                    className="p-2.5 bg-white/70 backdrop-blur-md rounded-full shadow-lg text-earth-dark hover:bg-white transition-all cursor-pointer"
                     aria-label="Share product"
                   >
-                    <Share2 className="w-5 h-5" />
+                    <Share2 className="w-4 h-4" />
                   </button>
                 </div>
 
@@ -136,16 +160,15 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               </div>
 
               {/* Thumbnails */}
-              <div className="flex gap-3">
+              <div className="flex gap-3 overflow-x-auto py-2 -my-2 px-1 -mx-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {product.images.map((img, idx) => (
                   <button
                     key={idx}
-                    onClick={() => setActiveImageIndex(idx)}
-                    className={`relative flex-1 aspect-square rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ${
-                      idx === activeImageIndex
+                    onClick={() => handleThumbnailClick(idx)}
+                    className={`relative flex-shrink-0 w-16 h-16 md:w-auto md:flex-1 md:aspect-square rounded-xl md:rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ${idx === activeImageIndex
                         ? 'ring-2 ring-earth-dark ring-offset-2 ring-offset-sand-light shadow-lg'
                         : 'opacity-60 hover:opacity-90 saturate-[0.7] hover:saturate-100'
-                    }`}
+                      }`}
                   >
                     <img
                       src={img}
@@ -165,17 +188,17 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               className="w-full lg:w-[42%] flex flex-col"
             >
               {/* Category label */}
-              <span className="text-xs uppercase tracking-[0.2em] text-earth/40 font-medium mb-4">
+              <span className="hidden md:block text-xs uppercase tracking-[0.2em] text-earth/40 font-medium mb-4">
                 {product.category === 'details'
-                  ? 'Accessories'
+                  ? 'Aksesuarlar'
                   : product.category}
               </span>
 
               {/* Title & Price */}
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display font-semibold leading-[1.1] mb-3">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display font-medium leading-[1.1] mb-3">
                 {product.name}
               </h1>
-              <p className="text-2xl sm:text-3xl text-earth/60 font-medium mb-8">
+              <p className="font-sans font-normal text-2xl sm:text-3xl text-earth/60 mb-8">
                 {product.price}
               </p>
 
@@ -185,7 +208,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               {/* Description */}
               <div className="mb-10">
                 <h2 className="font-display font-medium text-lg mb-4 text-earth-dark">
-                  About this piece
+                  Bu parça hakkında
                 </h2>
                 <p className="text-earth/70 leading-relaxed text-base lg:text-lg">
                   {product.description}
@@ -195,17 +218,16 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               {/* Specs */}
               <div className="mb-10">
                 <h2 className="font-display font-medium text-lg mb-5 text-earth-dark">
-                  Specifications
+                  Özellikler
                 </h2>
                 <div className="bg-white/50 backdrop-blur-sm rounded-2xl border border-white/60 overflow-hidden">
                   {product.specs.map((spec, idx) => (
                     <div
                       key={idx}
-                      className={`flex justify-between items-center px-5 py-4 ${
-                        idx < product.specs.length - 1
+                      className={`flex justify-between items-center px-5 py-4 ${idx < product.specs.length - 1
                           ? 'border-b border-earth/8'
                           : ''
-                      }`}
+                        }`}
                     >
                       <span className="text-sm text-earth/50 font-medium">
                         {spec.label}
@@ -221,9 +243,9 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               {/* Trust badges */}
               <div className="flex items-center gap-6 mb-10 flex-wrap">
                 {[
-                  '5-Year Warranty',
-                  'Free Delivery',
-                  'Assembly Included',
+                  '5 Yıl Garanti',
+                  'Ücretsiz Teslimat',
+                  'Montaj Dahil',
                 ].map((badge) => (
                   <div
                     key={badge}
@@ -244,10 +266,10 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                   className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-5 rounded-full font-medium flex items-center justify-center space-x-3 transition-colors cursor-pointer shadow-lg shadow-[#25D366]/20 text-lg"
                 >
                   <MessageCircle className="w-6 h-6" />
-                  <span>Inquire via WhatsApp</span>
+                  <span>WhatsApp ile Bilgi Al</span>
                 </button>
                 <p className="text-center text-xs text-earth/40 mt-3">
-                  Typically replies within 2 hours
+                  Genellikle 2 saat içinde yanıt verir
                 </p>
               </div>
             </motion.div>
@@ -270,23 +292,22 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               <div className="flex items-end justify-between mb-10">
                 <div>
                   <h2 className="text-2xl sm:text-3xl font-display font-semibold mb-2">
-                    You may also like
+                    Şunlar da hoşunuza gidebilir
                   </h2>
                   <p className="text-earth/50 text-sm sm:text-base">
-                    More from the{' '}
                     <span className="font-medium text-earth-dark capitalize">
                       {product.category === 'details'
-                        ? 'Accessories'
+                        ? 'Aksesuarlar'
                         : product.category}
                     </span>{' '}
-                    collection
+                    koleksiyonundan daha fazlası
                   </p>
                 </div>
                 <TransitionLink
                   href={`/products?category=${product.category}`}
                   className="hidden sm:flex items-center gap-1.5 text-sm font-medium text-earth/60 hover:text-earth-dark transition-colors"
                 >
-                  View all
+                  Tümünü gör
                   <ChevronRight className="w-4 h-4" />
                 </TransitionLink>
               </div>
@@ -316,24 +337,25 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                         className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                      <div className="absolute top-4 left-4 glass px-3 py-1.5 rounded-full text-xs font-medium tracking-wide">
-                        {related.tag}
+                      <div className="absolute bottom-4 right-4 bg-white/80 backdrop-blur-md w-9 h-9 flex items-center justify-center rounded-full shadow-lg opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:bg-earth-dark hover:text-white">
+                        <Plus className="w-4 h-4" />
                       </div>
-                      <div className="absolute bottom-4 right-4 bg-white/80 backdrop-blur-md p-3.5 rounded-full shadow-lg opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:bg-earth-dark hover:text-white">
-                        <Plus className="w-5 h-5" />
-                      </div>
-                      <div className="absolute bottom-4 left-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 delay-75">
-                        <span className="bg-white/80 backdrop-blur-md px-4 py-2 rounded-full text-sm font-semibold text-earth-dark shadow-lg">
+                      {/* Tag & Price Container */}
+                      <div className="absolute bottom-4 left-4 flex items-center z-10 transition-all duration-500 gap-0 group-hover:gap-2">
+                        <div className="bg-white/80 backdrop-blur-md shadow-lg rounded-full font-sans font-normal text-base tracking-wide text-earth-dark whitespace-nowrap overflow-hidden transition-all duration-500 max-w-0 opacity-0 group-hover:max-w-[120px] group-hover:opacity-100 flex items-center h-9 px-0 group-hover:px-4">
                           {related.price}
-                        </span>
+                        </div>
+                        <div className="bg-white/80 backdrop-blur-md shadow-lg px-3.5 rounded-full font-sans font-medium text-[11px] tracking-widest uppercase text-earth-dark transition-all duration-500 flex items-center h-9">
+                          {related.tag}
+                        </div>
                       </div>
                     </div>
                     <div className="px-1">
                       <div className="flex justify-between items-start gap-4">
-                        <h3 className="text-lg font-display font-medium group-hover:text-earth transition-colors leading-tight">
+                        <h3 className="text-[20px] font-display font-medium group-hover:text-earth transition-colors leading-tight">
                           {related.name}
                         </h3>
-                        <span className="text-base font-semibold text-earth/70 whitespace-nowrap pt-0.5">
+                        <span className="font-sans font-normal text-lg text-earth/70 whitespace-nowrap pt-0.5">
                           {related.price}
                         </span>
                       </div>
@@ -348,7 +370,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                 href={`/products?category=${product.category}`}
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-earth/60 hover:text-earth-dark transition-colors"
               >
-                View all in this collection
+                Bu koleksiyondaki tümünü gör
                 <ChevronRight className="w-4 h-4" />
               </TransitionLink>
             </div>

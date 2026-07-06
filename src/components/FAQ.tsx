@@ -11,10 +11,10 @@ export function FAQ() {
     <section id="faq" className="py-24 px-6 lg:px-8 max-w-4xl mx-auto">
       <div className="text-center mb-16">
         <TextReveal as="h2" className="text-3xl md:text-5xl font-display font-semibold mb-4">
-          Questions?
+          Sorularınız mı var?
         </TextReveal>
         <LineReveal className="text-lg text-earth/80 tracking-wide" delay={0.2}>
-          Everything you need to know about our products and services.
+          Ürünlerimiz ve hizmetlerimiz hakkında bilmeniz gereken her şey.
         </LineReveal>
       </div>
 

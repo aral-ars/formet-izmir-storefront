@@ -18,17 +18,17 @@ export function Categories() {
   };
 
   return (
-    <section id="collections" className="py-32 px-6 lg:px-8 overflow-hidden flex flex-col items-center">
+    <section id="collections" className="py-16 lg:py-20 px-6 lg:px-8 overflow-hidden flex flex-col items-center">
       
       {/* Badge */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-earth/5 text-earth text-sm font-medium mb-8"
+        className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-earth/5 text-earth text-sm font-medium mb-6"
       >
         <Plus className="w-3.5 h-3.5" />
-        <span>Our Collections</span>
+        <span>Koleksiyonlarımız</span>
       </motion.div>
 
       {/* Heading */}
@@ -37,14 +37,14 @@ export function Categories() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.1 }}
-        className="text-4xl md:text-5xl lg:text-6xl font-display font-medium text-center text-earth-dark max-w-3xl mb-24 leading-tight tracking-tight"
+        className="text-4xl md:text-5xl font-display font-medium text-center text-earth-dark max-w-3xl mb-12 lg:mb-16 leading-tight tracking-tight"
       >
-        From exterior to interior — <br className="hidden md:block" />
-        <span className="italic font-serif font-light">effortlessly</span>
+        Dış mekandan iç mekana — <br className="hidden md:block" />
+        <span className="italic font-serif font-light">zahmetsizce</span>
       </motion.h2>
 
       {/* Fanned Cards */}
-      <div className="relative w-full max-w-5xl h-[450px] md:h-[550px] flex justify-center items-center mb-24">
+      <div className="relative w-full max-w-5xl h-[380px] md:h-[460px] flex justify-center items-center mb-12 lg:mb-16">
         {displayCategories.map((category, index) => {
           const style = getCardStyle(index);
           return (
@@ -69,7 +69,7 @@ export function Categories() {
                 delay: index * 0.1, 
                 ease: [0.21, 0.47, 0.32, 0.98] 
               }}
-              className="absolute w-[220px] md:w-[300px] h-[340px] md:h-[420px] rounded-2xl md:rounded-3xl overflow-hidden bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-earth/5 flex flex-col cursor-pointer"
+              className="absolute w-[200px] md:w-[260px] h-[300px] md:h-[380px] rounded-2xl md:rounded-3xl overflow-hidden bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-earth/5 flex flex-col cursor-pointer"
               style={{ zIndex: style.zIndex }}
             >
               {/* Image Section */}
@@ -84,9 +84,9 @@ export function Categories() {
               </div>
               
               {/* Text Section */}
-              <div className="relative bg-white px-4 pt-4 pb-4 md:px-6 md:pt-5 md:pb-5 flex flex-col justify-start h-[100px] md:h-[112px] shrink-0 z-10 -mt-px">
+              <div className="relative bg-white px-4 pt-3 pb-4 md:px-5 md:pt-4 md:pb-5 flex flex-col justify-start h-[90px] md:h-[100px] shrink-0 z-10 -mt-px">
                 <h3 className="text-lg md:text-xl font-serif italic mb-1 text-earth-dark leading-tight">{category.name}</h3>
-                <p className="text-xs md:text-sm text-earth/70 leading-relaxed font-light">{category.description}</p>
+                <p className="text-xs text-earth/70 leading-relaxed font-light line-clamp-2">{category.description}</p>
               </div>
             </motion.div>
           );
@@ -101,7 +101,7 @@ export function Categories() {
         transition={{ delay: 0.5 }}
         className="group flex items-center bg-earth-dark text-white rounded-full pl-6 pr-2 py-2 hover:bg-earth transition-colors shadow-lg shadow-earth-dark/20"
       >
-        <span className="text-sm font-medium mr-4">Explore collections</span>
+        <span className="text-sm font-medium mr-4">Koleksiyonları keşfet</span>
         <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white text-earth-dark flex items-center justify-center group-hover:scale-105 transition-transform">
           <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
         </div>

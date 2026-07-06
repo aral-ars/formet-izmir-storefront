@@ -1,6 +1,5 @@
-import { PRODUCTS } from '../../../data';
-import { ProductDetailClient } from '../../../components/ProductDetail';
-import { ProductExperience } from '../../../components/ProductExperience';
+import { PRODUCTS } from '../../../../data';
+import { ProductExperience } from '../../../../components/ProductExperience';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 
@@ -23,7 +22,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function ProductPage({
+export default async function ProductExperiencePage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -32,16 +31,5 @@ export default async function ProductPage({
   const product = PRODUCTS.find((p) => p.id === Number(id));
   if (!product) notFound();
 
-  return (
-    <>
-      {/* Mobile (< md): immersive product experience */}
-      <div className="md:hidden">
-        <ProductExperience product={product} />
-      </div>
-      {/* Tablet & desktop (>= md): full two-column layout */}
-      <div className="hidden md:block">
-        <ProductDetailClient product={product} />
-      </div>
-    </>
-  );
+  return <ProductExperience product={product} />;
 }

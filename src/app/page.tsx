@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import { Hero } from '../components/Hero';
 import { Categories } from '../components/Categories';
 import { Featured } from '../components/Featured';
@@ -14,6 +14,16 @@ import { ASSETS } from '../data';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
+
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"]
+  });
+
+  // Scale and translate the section below the hero
+  const contentY = useTransform(scrollYProgress, [0, 1], [-150, 0]);
+  const contentScale = useTransform(scrollYProgress, [0, 1], [0.95, 1]);
 
   useEffect(() => {
     // Only show splash on first visit per session
@@ -65,13 +75,28 @@ export default function App() {
 
       <div className="min-h-screen bg-sand-light text-earth-dark selection:bg-earth selection:text-sand-light overflow-x-clip">
         <Navbar />
-        <Hero />
-        <Categories />
-        <Featured />
-        <Reviews />
-        <Location />
-        <FAQ />
-        <Footer />
+        
+        {/* Hero section with higher z-index to cover the content below during parallax */}
+        <div ref={heroRef} className="relative z-20 bg-sand-light">
+          <Hero />
+        </div>
+
+        {/* Content below hero with parallax and scaling effect */}
+        <motion.div 
+          className="relative z-10 bg-sand-light"
+          style={{ 
+            y: contentY, 
+            scale: contentScale,
+            transformOrigin: "top center"
+          }}
+        >
+          <Categories />
+          <Featured />
+          <Reviews />
+          <Location />
+          <FAQ />
+          <Footer />
+        </motion.div>
       </div>
     </>
   );

@@ -5,20 +5,23 @@ import { motion, useScroll, useTransform, useSpring, useMotionValueEvent, Motion
 import { MapPin, ArrowUpRight, Mail, Clock } from 'lucide-react';
 
 /* ── Scroll choreography (progress 0 → 1 over the pinned track) ──
-   0.02–0.20  title types out, centered & dark, scrubbed to scroll
-   0.20–0.32  dark card fades in; 0.22–0.58 it blooms center-out (horizontal)
-   0.24–0.60  title migrates center → its resting spot (top-left of the card)
-   0.26–0.50  title color shifts dark → light as the card fills behind it
-   0.60–0.92  eyebrow, paragraph, then the three cards stagger in
-   0.92–1.00  hold, then the pin releases                                    */
-const TYPE_A = 0.02; // typing starts just after the pin engages
-const TYPE_B = 0.2;  // title fully typed (still centered)
-const MIG_A = 0.24;  // title starts migrating toward the corner
-const MIG_B = 0.6;
+   0.03–0.28  title types out, centered & dark, scrubbed to scroll
+   0.28–0.36  breather — the fully-typed title holds, centered & alone
+   0.36–0.62  dark card fades in and blooms center-out (horizontal)
+   0.36–1.00  video slowly zooms + parallaxes behind the card (living background)
+   0.40–0.66  title migrates center → its resting spot (top-left of the card)
+   0.44–0.62  title color shifts dark → light as the card fills behind it
+   0.60–0.87  eyebrow · word-by-word paragraph · drawn rule · cards assemble in
+   0.87–0.96  everything settled — the finished card dwells (extended hold)
+   0.96–1.00  stage lifts / recedes / softens, then the pin releases         */
+const TYPE_A = 0.03; // typing starts just after the pin engages
+const TYPE_B = 0.28; // title fully typed (wide window = slower, more legible letters)
+const MIG_A = 0.4;   // title starts migrating toward the corner (after a breather)
+const MIG_B = 0.66;
 const BIG = 1.4; // centered title scale relative to its resting size
 
-const LINE1 = 'Experience';
-const LINE2 = 'elegance.';
+const LINE1 = 'Zarafeti';
+const LINE2 = 'deneyimleyin.';
 const TOTAL = LINE1.length + LINE2.length;
 
 const clampT = (v: number, a: number, b: number) => Math.min(1, Math.max(0, (v - a) / (b - a)));
@@ -35,6 +38,27 @@ function Caret({ show }: { show: boolean }) {
       animate={{ opacity: [1, 1, 0, 0] }}
       transition={{ duration: 0.9, repeat: Infinity, ease: 'linear' }}
     />
+  );
+}
+
+const PARAGRAPH =
+  'Dokuları hissetmek, konforu test etmek ve dış mekan vizyonunuzu hayata geçirmek için tasarım uzmanlarımıza danışmak üzere İzmir mağazamıza adım atın.';
+const PARA_A = 0.63; // paragraph word-reveal window (progress)
+const PARA_B = 0.82;
+
+// One word of the scroll-scrubbed paragraph reveal — its own component so hooks stay stable
+function ScrollWord({ progress, start, end, children }: {
+  progress: MotionValue<number>;
+  start: number;
+  end: number;
+  children: string;
+}) {
+  const opacity = useTransform(progress, [start, end], [0, 1]);
+  const y = useTransform(progress, [start, end], ['0.5em', '0em']);
+  return (
+    <motion.span style={{ opacity, y }} className="inline-block mr-[0.26em]">
+      {children}
+    </motion.span>
   );
 }
 
@@ -90,7 +114,7 @@ export function Location() {
     window.addEventListener('resize', measure);
     // Fonts change the ghost's measured size — re-measure once they're ready.
     if (typeof document !== 'undefined' && document.fonts) {
-      document.fonts.ready.then(measure).catch(() => { });
+      document.fonts.ready.then(measure).catch(() => {});
     }
     return () => window.removeEventListener('resize', measure);
   }, []);
@@ -99,45 +123,63 @@ export function Location() {
   const titleX = useTransform(p, (v) => m.dx * (1 - clampT(v, MIG_A, MIG_B)));
   const titleY = useTransform(p, (v) => m.dy * (1 - clampT(v, MIG_A, MIG_B)));
   const titleScale = useTransform(p, (v) => BIG + (1 - BIG) * clampT(v, MIG_A, MIG_B));
-  const titleColor = useTransform(p, [0.26, 0.5], ['#2C2822', '#F4F2EE']);
+  const titleColor = useTransform(p, [0.44, 0.62], ['#2C2822', '#F4F2EE']);
 
   // ── Card bloom (center-out, horizontal emphasis) ──
   const cardClip = useTransform(p, (v) => {
-    const t = clampT(v, 0.22, 0.58);
+    const t = clampT(v, 0.36, 0.62);
     const lr = 49 * (1 - t); // horizontal — opens wide (left & right)
     const tb = 22 * (1 - t); // vertical — opens less, so it reads as growing sideways
     const r = Math.max(120 - 90 * t, 24);
     return `inset(${tb}% ${lr}% ${tb}% ${lr}% round ${r}px)`;
   });
-  const cardOpacity = useTransform(p, [0.2, 0.32], [0, 1]);
+  const cardOpacity = useTransform(p, [0.36, 0.46], [0, 1]);
 
-  // ── Content reveal (staggered by input range, not by variants) ──
-  const mk = (a: number, b: number): [MotionValue<number>, MotionValue<number>] => [
-    useTransform(p, [a, b], [0, 1]),
-    useTransform(p, [a, b], [26, 0]),
-  ];
-  const [eyebrowO, eyebrowY] = mk(0.6, 0.72);
-  const [paraO, paraY] = mk(0.64, 0.76);
-  const [c1O, c1Y] = mk(0.68, 0.82);
-  const [c2O, c2Y] = mk(0.73, 0.87);
-  const [c3O, c3Y] = mk(0.78, 0.92);
+  // ── Living video: slow scroll-linked zoom + parallax as the card reveals ──
+  const videoScale = useTransform(p, [0.36, 1], [1.25, 1.04]);
+  const videoY = useTransform(p, [0.36, 1], ['-3%', '3%']);
+
+  // ── Graceful exit: on release the whole stage lifts, recedes and softens ──
+  const sceneY = useTransform(p, [0.96, 1], [0, -48]);
+  const sceneScale = useTransform(p, [0.96, 1], [1, 0.955]);
+  const sceneOpacity = useTransform(p, [0.96, 1], [1, 0.82]);
+
+  // ── Content reveal (all settled by ~0.87, then a long dwell before the 0.96 exit) ──
+  const eyebrowO = useTransform(p, [0.6, 0.68], [0, 1]);
+  const eyebrowY = useTransform(p, [0.6, 0.68], [20, 0]);
+  const dividerScaleX = useTransform(p, [0.64, 0.78], [0, 1]);
+
+  // Cards assemble from three directions, converging into the grid
+  const c1O = useTransform(p, [0.65, 0.77], [0, 1]);
+  const c1X = useTransform(p, [0.65, 0.79], ['-16%', '0%']);
+  const c1Y = useTransform(p, [0.65, 0.79], ['16%', '0%']);
+  const c2O = useTransform(p, [0.69, 0.81], [0, 1]);
+  const c2Y = useTransform(p, [0.69, 0.83], ['32%', '0%']);
+  const c3O = useTransform(p, [0.73, 0.85], [0, 1]);
+  const c3X = useTransform(p, [0.73, 0.87], ['16%', '0%']);
+  const c3Y = useTransform(p, [0.73, 0.87], ['16%', '0%']);
 
   const titleClasses =
     'font-display font-medium leading-[1.02] tracking-tight text-4xl md:text-5xl lg:text-6xl xl:text-7xl';
 
   return (
-    <section ref={sectionRef} id="showroom" className="relative h-[260vh]">
+    <section ref={sectionRef} id="showroom" className="relative h-[380vh]">
       <div className="sticky top-0 h-screen overflow-hidden flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div ref={stageRef} className="relative w-full max-w-[88rem] mx-auto h-[78vh] md:h-[80vh]">
+        <motion.div
+          ref={stageRef}
+          style={{ y: sceneY, scale: sceneScale, opacity: sceneOpacity }}
+          className="relative w-full max-w-[88rem] mx-auto h-[78vh] md:h-[80vh] will-change-transform"
+        >
 
           {/* Dark card — video background, revealed by the center-out clip bloom */}
           <motion.div
             style={{ clipPath: cardClip, opacity: cardOpacity }}
             className="absolute inset-0 rounded-[2.5rem] md:rounded-[3.5rem] bg-earth-dark overflow-hidden shadow-2xl will-change-[clip-path,opacity]"
           >
-            <video
+            <motion.video
               src="https://res.cloudinary.com/ocd5tjel/video/upload/v1783175887/S%CC%A7%C4%B1kl%C4%B1g%CC%86%C4%B1n_adresi_Mithatpas%CC%A7a_Caddesi_No-651_Siteler_Mahallesi_i4kzlq.mp4"
-              className="absolute inset-0 w-full h-full object-cover opacity-90"
+              style={{ scale: videoScale, y: videoY }}
+              className="absolute inset-0 w-full h-full object-cover opacity-90 will-change-transform"
               autoPlay
               loop
               muted
@@ -154,7 +196,7 @@ export function Location() {
               style={{ opacity: eyebrowO, y: eyebrowY }}
               className="uppercase tracking-[0.2em] text-xs font-medium text-white/50 mb-6 block"
             >
-              Flagship Showroom
+              Ana Mağaza
             </motion.span>
 
             {/* Ghost title — invisible, reserves the exact resting layout the overlay lands on.
@@ -165,35 +207,46 @@ export function Location() {
               <span className="block font-serif italic">{LINE2}</span>
             </h2>
 
-            <motion.p
-              style={{ opacity: paraO, y: paraY }}
-              className="text-white/70 text-base md:text-lg font-light leading-relaxed mt-8 mb-10 max-w-md lg:max-w-lg"
-            >
-              Step into our Izmir space to feel the textures, test the comfort, and consult with our design specialists to bring your outdoor vision to life.
-            </motion.p>
+            {/* Paragraph — scroll-scrubbed word-by-word reveal (speaks the site's TextReveal language) */}
+            <p className="text-white/70 text-base md:text-lg font-light leading-relaxed mt-8 mb-10 max-w-md lg:max-w-lg">
+              {PARAGRAPH.split(' ').map((word, i, arr) => {
+                const step = (PARA_B - PARA_A) / arr.length;
+                const start = PARA_A + i * step;
+                return (
+                  <ScrollWord key={i} progress={p} start={start} end={start + step * 3}>
+                    {word}
+                  </ScrollWord>
+                );
+              })}
+            </p>
 
-            {/* Info cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 mt-auto max-w-4xl">
-              {/* Location */}
+            {/* Drawn rule + info cards, held to the bottom of the stage */}
+            <div className="mt-auto max-w-4xl">
               <motion.div
-                style={{ opacity: c1O, y: c1Y }}
-                className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-[2rem] p-8 hover:bg-white/10 transition-colors duration-500 flex flex-col h-full group"
-              >
+                style={{ scaleX: dividerScaleX }}
+                className="h-px w-full bg-white/15 origin-left mb-8"
+              />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
+                {/* Location — assembles from the left */}
+                <motion.div
+                  style={{ opacity: c1O, x: c1X, y: c1Y }}
+                  className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-[2rem] p-8 hover:bg-white/10 transition-colors duration-500 flex flex-col h-full group"
+                >
                 <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform duration-500">
                   <MapPin className="w-4 h-4" />
                 </div>
-                <h4 className="text-white font-medium text-lg mb-2">Location</h4>
+                <h4 className="text-white font-medium text-lg mb-2">Konum</h4>
                 <p className="text-white/60 font-light text-sm leading-relaxed mb-6 flex-grow">
                   Mithatpaşa Caddesi No:651<br />
                   Siteler Mahallesi, İzmir
                 </p>
                 <a href="https://maps.app.goo.gl/cN8DDk2KxbBAzgrk6" target="_blank" rel="noopener noreferrer" className="inline-flex items-center space-x-2 text-sm font-medium text-white/80 hover:text-white transition-colors mt-auto group/link">
-                  <span>Get Directions</span>
+                  <span>Yol Tarifi Al</span>
                   <ArrowUpRight className="w-4 h-4 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
                 </a>
               </motion.div>
 
-              {/* Hours */}
+              {/* Hours — rises from below */}
               <motion.div
                 style={{ opacity: c2O, y: c2Y }}
                 className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-[2rem] p-8 hover:bg-white/10 transition-colors duration-500 flex flex-col group"
@@ -201,33 +254,34 @@ export function Location() {
                 <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform duration-500">
                   <Clock className="w-4 h-4" />
                 </div>
-                <h4 className="text-white font-medium text-lg mb-4">Hours</h4>
+                <h4 className="text-white font-medium text-lg mb-4">Çalışma Saatleri</h4>
                 <div className="space-y-2 text-sm font-light text-white/60">
                   <div className="flex justify-between border-b border-white/5 pb-2">
-                    <span>Mon - Sat</span>
+                    <span>Pzt - Cmt</span>
                     <span className="text-white">10:00 - 19:00</span>
                   </div>
                   <div className="flex justify-between pt-1">
-                    <span>Sunday</span>
-                    <span className="text-white/40">Closed</span>
+                    <span>Pazar</span>
+                    <span className="text-white/40">Kapalı</span>
                   </div>
                 </div>
               </motion.div>
 
-              {/* Contact */}
+              {/* Contact — assembles from the right */}
               <motion.div
-                style={{ opacity: c3O, y: c3Y }}
+                style={{ opacity: c3O, x: c3X, y: c3Y }}
                 className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-[2rem] p-8 hover:bg-white/10 transition-colors duration-500 flex flex-col group"
               >
                 <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform duration-500">
                   <Mail className="w-4 h-4" />
                 </div>
-                <h4 className="text-white font-medium text-lg mb-4">Contact</h4>
+                <h4 className="text-white font-medium text-lg mb-4">İletişim</h4>
                 <div className="space-y-2 text-sm font-light flex flex-col">
                   <a href="tel:+902325550123" className="text-white/60 hover:text-white transition-colors mb-2">+90 (232) 555 0123</a>
                   <a href="mailto:hello@formet-outdoor.com" className="text-white/60 hover:text-white transition-colors">hello@formet-outdoor.com</a>
                 </div>
-              </motion.div>
+                </motion.div>
+              </div>
             </div>
           </div>
 
@@ -257,7 +311,13 @@ export function Location() {
               </span>
             </h2>
           </motion.div>
-        </div>
+        </motion.div>
+
+        {/* Whisper-subtle scroll progress — delete if it reads too utilitarian */}
+        <motion.div
+          style={{ scaleX: p }}
+          className="absolute bottom-6 inset-x-0 mx-auto h-px w-40 bg-earth-dark/15 origin-left rounded-full"
+        />
       </div>
     </section>
   );

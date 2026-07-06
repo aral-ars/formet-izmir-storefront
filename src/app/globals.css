@@ -27,61 +27,61 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
+  h1, h2, h3, h4, h5, h6 {
     @apply font-display;
     letter-spacing: -0.025em;
     text-wrap: balance;
   }
 
-  h1 {
-    letter-spacing: -0.035em;
-  }
-
-  h2 {
-    letter-spacing: -0.03em;
-  }
+  h1 { letter-spacing: -0.035em; }
+  h2 { letter-spacing: -0.03em; }
 
   p {
     text-wrap: pretty;
   }
 
   /* Smoother text rendering for light-on-dark */
-  .text-white,
-  .text-sand-light,
-  [class*="text-white/"] {
+  .text-white, .text-sand-light, [class*="text-white/"] {
     -webkit-font-smoothing: antialiased;
   }
-
   .maplibregl-popup-content {
-    @apply !bg-transparent !shadow-none !p-0 !rounded-none;
+    @apply bg-transparent! shadow-none! p-0! rounded-none!;
   }
-
   .maplibregl-popup-tip {
-    @apply !hidden;
+    @apply hidden!;
   }
-
   * {
     @apply border-border outline-ring/50;
   }
-
   html {
     @apply font-sans;
   }
 }
 
-/* ─── Glassmorphism ────────────────────────────────────────────── */
+/* ─── Premium Glassmorphism (Soft/Cloud Style) ─────────────────── */
 
+/* Primary Glass: Soft, highly frosted cloud-like glass. No sharp borders. */
 .glass {
-  @apply bg-white/60 backdrop-blur-lg border border-white/40 shadow-lg;
+  @apply bg-white/70 backdrop-blur-2xl shadow-[0_8px_30px_rgba(0,0,0,0.04)];
+  -webkit-backdrop-filter: blur(32px);
 }
 
+/* Subtle Glass: Lighter frost, still very soft edges. */
+.glass-subtle {
+  @apply bg-white/40 backdrop-blur-xl shadow-[0_4px_20px_rgba(0,0,0,0.03)];
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Heavy Glass: Almost opaque white frost. Very legible. */
+.glass-panel {
+  @apply bg-white/85 backdrop-blur-3xl shadow-[0_12px_40px_rgba(0,0,0,0.08)];
+  -webkit-backdrop-filter: blur(48px);
+}
+
+/* Dark Glass: Soft dark frost. No sharp highlights. */
 .glass-dark {
-  @apply bg-black/40 backdrop-blur-lg border border-white/10 shadow-lg;
+  @apply bg-black/40 backdrop-blur-2xl text-white shadow-[0_8px_30px_rgba(0,0,0,0.15)];
+  -webkit-backdrop-filter: blur(32px);
 }
 
 /* ─── Utilities ────────────────────────────────────────────────── */
@@ -90,7 +90,6 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
-
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;

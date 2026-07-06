@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
    both keep working — which is exactly what the Location scrollytelling relies on.
    `lerp` is the smoothing factor per frame: lower = floatier/longer trail,
    higher = snappier. 0.1 is a calm, premium default. */
-const LERP = 0.07;
+const LERP = 0.08;
 
 export function SmoothScroll({ children }: { children: React.ReactNode }) {
     // Respect prefers-reduced-motion: lerp 1 = no easing (native, instant scroll).

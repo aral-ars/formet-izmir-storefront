@@ -7,17 +7,17 @@ export function Hero() {
   const words = ["Nature's", "perfect", "extension."];
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 h-[100dvh]">
+    <div className="pt-4 sm:pt-1 lg:pt-8 px-1 pb-1 lg:px-1.5 lg:pb-1.5 h-[100dvh]">
       <div className="relative w-full h-full rounded-3xl overflow-hidden bg-sand">
-        
-        <img 
-          src={ASSETS.pisaLifestyle} 
-          alt="Outdoor furniture lifestyle" 
+
+        <img
+          src={ASSETS.pisaLifestyle}
+          alt="Outdoor furniture lifestyle"
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black/30" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-black/30" />
-        
+
         <div className="absolute inset-0 flex flex-col justify-end p-8 sm:p-12 lg:p-20">
           <div className="max-w-2xl">
             {/* Word-by-word text reveal headline */}
@@ -25,11 +25,10 @@ export function Hero() {
               {words.map((word, i) => (
                 <span key={i} className="inline-block overflow-hidden mr-[0.28em] last:mr-0">
                   <motion.span
-                    className={`inline-block ${
-                      word === 'perfect'
-                        ? 'font-serif italic font-medium relative'
-                        : ''
-                    }`}
+                    className={`inline-block ${word === 'perfect'
+                      ? 'font-serif italic font-medium relative'
+                      : ''
+                      }`}
                     initial={{ y: '120%', opacity: 0 }}
                     animate={{ y: '0%', opacity: 1 }}
                     transition={{
@@ -40,11 +39,11 @@ export function Hero() {
                   >
                     {word}
                     {word === 'perfect' && (
-                      <motion.span 
+                      <motion.span
                         initial={{ width: 0 }}
                         animate={{ width: "100%" }}
                         transition={{ duration: 0.8, delay: 1.2, ease: "easeOut" }}
-                        className="absolute left-0 bottom-1 sm:bottom-2 h-[3px] sm:h-[4px] bg-white/70 rounded-full" 
+                        className="absolute left-0 bottom-1 sm:bottom-2 h-[3px] sm:h-[4px] bg-white/70 rounded-full"
                       />
                     )}
                   </motion.span>

@@ -16,14 +16,14 @@ const itemVariants: Variants = {
     transition: {
       duration: 0.65,
       delay: 0.45 + i * 0.1,
-      ease: [0.33, 1, 0.68, 1]
+      ease: [0.33, 1, 0.68, 1] as [number, number, number, number]
     }
   }),
   exit: {
     y: '0%',
     transition: {
       duration: 0.85,
-      ease: [0.76, 0, 0.24, 1]
+      ease: [0.76, 0, 0.24, 1] as [number, number, number, number]
     }
   }
 };

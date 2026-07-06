@@ -5,7 +5,7 @@ import { motion, useScroll, useTransform } from 'motion/react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Map, MapMarker, MarkerContent, MapControls } from "@/components/ui/map";
-import { Store } from "lucide-react";
+import { Store, ArrowUpRight } from "lucide-react";
 
 export default function LocateUs() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -33,7 +33,7 @@ export default function LocateUs() {
 
   return (
     <div className="bg-sand-light min-h-screen text-earth-dark">
-      <Navbar />
+      <Navbar forceDarkText />
       
       {/* Scroll track: high enough to allow the sequence to play out */}
       <div ref={containerRef} className="h-[250vh] relative">
@@ -79,9 +79,12 @@ export default function LocateUs() {
                        className="relative flex items-center justify-center group cursor-pointer"
                      >
                        {/* Tooltip on hover */}
-                       <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 group-hover:-translate-y-2 transition-all duration-300 pointer-events-none whitespace-nowrap bg-earth-dark text-white text-xs px-3 py-2 rounded shadow-2xl font-medium tracking-wider uppercase z-20 flex flex-col items-center">
-                         Yol Tarifi Al
-                         <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-earth-dark"></div>
+                       <div className="absolute bottom-full mb-3 opacity-0 group-hover:opacity-100 group-hover:-translate-y-2 transition-all duration-400 ease-out pointer-events-none whitespace-nowrap bg-white/95 backdrop-blur-md text-earth-dark text-[13px] px-4 py-2 rounded-full shadow-lg border border-white z-20 flex flex-col items-center font-medium">
+                         <span className="flex items-center gap-1.5">
+                           Yol tarifi al
+                           <ArrowUpRight size={14} className="opacity-70 stroke-[2.5]" />
+                         </span>
+                         <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-white"></div>
                        </div>
 
                        {/* Ping Ring */}

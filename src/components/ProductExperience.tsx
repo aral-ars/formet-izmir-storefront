@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { PRODUCTS, ASSETS, type Product } from '../data';
 import { TransitionLink } from './TransitionLink';
-import { ProductsNavbar } from './ProductsNavbar';
+import { Navbar } from './Navbar';
 
 // Signature easing — a soft, confident settle used across the page.
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -25,18 +25,6 @@ const PROMISES = [
   { icon: Truck, title: 'Free Delivery', sub: 'White-glove, straight to your space' },
   { icon: Wrench, title: 'Assembly Included', sub: 'Placed exactly where you want it' },
 ];
-
-// Named finishes → swatch colors, so the config selector reflects real materials.
-const COLOR_HEX: Record<string, string> = {
-  sand: '#D9CBB2',
-  charcoal: '#3C3A36',
-  olive: '#6E7253',
-  ivory: '#F1EBDD',
-  teak: '#B0763F',
-  natural: '#C9B79C',
-  stone: '#B9B4AC',
-  slate: '#5A5F63',
-};
 
 function AccordionItem({
   title,
@@ -87,9 +75,8 @@ export function ProductExperience({ product }: { product: Product }) {
   const reduce = useReducedMotion();
 
   // Config options — only shown when the product actually offers a choice.
-  const colorSpec = product.specs.find((s) => s.label.toLowerCase() === 'colors');
-  const colorOptions = colorSpec ? colorSpec.value.split(',').map((c) => c.trim()) : [];
-  const [selectedColor, setSelectedColor] = useState(colorOptions[0] ?? '');
+  const colorOptions = product.colors ?? [];
+  const [selectedColor, setSelectedColor] = useState(colorOptions[0]?.name ?? '');
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const { scrollLeft, clientWidth } = e.currentTarget;
@@ -146,7 +133,7 @@ export function ProductExperience({ product }: { product: Product }) {
       <div className="relative min-h-screen w-full max-w-[460px] overflow-x-hidden bg-sand-light">
 
         {/* Site navbar — transparent over the hero, solid on scroll */}
-        <ProductsNavbar overlay />
+        <Navbar />
 
         {/* ─── Immersive Hero ─────────────────────────────────────── */}
         <section className="relative h-[66vh] min-h-[440px] w-full bg-sand">
@@ -236,14 +223,14 @@ export function ProductExperience({ product }: { product: Product }) {
               </div>
               <div className="flex flex-wrap gap-2.5">
                 {colorOptions.map((c) => {
-                  const active = c === selectedColor;
+                  const active = c.name === selectedColor;
                   return (
                     <button
-                      key={c}
-                      onClick={() => setSelectedColor(c)}
-                      aria-label={c}
+                      key={c.name}
+                      onClick={() => setSelectedColor(c.name)}
+                      aria-label={c.name}
                       aria-pressed={active}
-                      style={{ backgroundColor: COLOR_HEX[c.toLowerCase()] ?? '#C9C2B5' }}
+                      style={{ backgroundColor: c.hex }}
                       className={`h-9 w-9 rounded-full transition-all ${
                         active
                           ? 'ring-2 ring-earth-dark ring-offset-2 ring-offset-sand-light'

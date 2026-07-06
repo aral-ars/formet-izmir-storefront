@@ -44,10 +44,10 @@ const LOCATIONS = [
 
 // Global shipments data for MapArc
 const SHIPMENTS = [
-  { id: "shipment-ny", from: LOCATIONS[0].coordinates, to: [-74.006, 40.7128] as [number, number], city: "New York" },
-  { id: "shipment-lon", from: LOCATIONS[0].coordinates, to: [-0.1276, 51.5074] as [number, number], city: "London" },
-  { id: "shipment-dxb", from: LOCATIONS[0].coordinates, to: [55.2708, 25.2048] as [number, number], city: "Dubai" },
-  { id: "shipment-tyo", from: LOCATIONS[0].coordinates, to: [139.6503, 35.6762] as [number, number], city: "Tokyo" },
+  { id: "ny", from: LOCATIONS[0].coordinates, to: [-74.006, 40.7128] as [number, number], city: "New York" },
+  { id: "ldn", from: LOCATIONS[0].coordinates, to: [-0.1276, 51.5074] as [number, number], city: "London" },
+  { id: "dxb", from: LOCATIONS[0].coordinates, to: [55.2708, 25.2048] as [number, number], city: "Dubai" },
+  { id: "tyo", from: LOCATIONS[0].coordinates, to: [139.6503, 35.6762] as [number, number], city: "Tokyo" },
 ];
 
 // Delivery Zone Polygon for MapGeoJSON

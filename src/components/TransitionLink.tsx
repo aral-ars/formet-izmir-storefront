@@ -14,8 +14,10 @@ export function TransitionLink({ href, children, onClick, ...props }: Transition
     // Allow cmd/ctrl+click for new tab
     if (e.metaKey || e.ctrlKey || e.shiftKey) return;
     
-    e.preventDefault();
     onClick?.(e);
+    if (e.defaultPrevented) return;
+    
+    e.preventDefault();
     startTransition(href);
   };
 

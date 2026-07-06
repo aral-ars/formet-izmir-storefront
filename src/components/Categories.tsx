@@ -18,18 +18,19 @@ export function Categories() {
   };
 
   return (
-    <section id="collections" className="py-16 lg:py-20 px-6 lg:px-8 overflow-hidden flex flex-col items-center">
+    <div className="px-1.5 pb-1.5 h-auto lg:h-[100dvh]">
+      <section id="collections" className="relative w-full h-full rounded-3xl bg-sand/30 overflow-hidden flex flex-col items-center justify-center py-16 lg:py-8 px-6 lg:px-8">
       
-      {/* Badge */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-earth/5 text-earth text-sm font-medium mb-6"
-      >
-        <Plus className="w-3.5 h-3.5" />
-        <span>Koleksiyonlarımız</span>
-      </motion.div>
+        {/* Badge */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-earth/10 text-earth text-sm font-medium mb-6 lg:mb-8"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>Koleksiyonlarımız</span>
+        </motion.div>
 
       {/* Heading */}
       <motion.h2 
@@ -37,14 +38,14 @@ export function Categories() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.1 }}
-        className="text-4xl md:text-5xl font-display font-medium text-center text-earth-dark max-w-3xl mb-12 lg:mb-16 leading-tight tracking-tight"
+        className="text-4xl md:text-5xl font-display font-medium text-center text-earth-dark max-w-3xl mb-10 lg:mb-12 leading-tight tracking-tight"
       >
         Dış mekandan iç mekana — <br className="hidden md:block" />
         <span className="italic font-serif font-light">zahmetsizce</span>
       </motion.h2>
 
       {/* Fanned Cards */}
-      <div className="relative w-full max-w-5xl h-[380px] md:h-[460px] flex justify-center items-center mb-12 lg:mb-16">
+      <div className="relative w-full max-w-5xl h-[340px] md:h-[420px] flex justify-center items-center mb-10 lg:mb-12">
         {displayCategories.map((category, index) => {
           const style = getCardStyle(index);
           return (
@@ -69,7 +70,7 @@ export function Categories() {
                 delay: index * 0.1, 
                 ease: [0.21, 0.47, 0.32, 0.98] 
               }}
-              className="absolute w-[200px] md:w-[260px] h-[300px] md:h-[380px] rounded-2xl md:rounded-3xl overflow-hidden bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-earth/5 flex flex-col cursor-pointer"
+              className="absolute w-[180px] md:w-[240px] h-[280px] md:h-[340px] rounded-2xl md:rounded-3xl overflow-hidden bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-earth/5 flex flex-col cursor-pointer"
               style={{ zIndex: style.zIndex }}
             >
               {/* Image Section */}
@@ -107,6 +108,7 @@ export function Categories() {
         </div>
       </motion.button>
 
-    </section>
+      </section>
+    </div>
   );
 }

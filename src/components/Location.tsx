@@ -190,11 +190,13 @@ export function Location() {
             <div className="absolute inset-0 bg-gradient-to-r from-earth-dark/90 via-earth-dark/35 to-transparent" />
           </motion.div>
 
-          {/* Content overlay — a sibling of the card so it's never clipped by the bloom */}
-          <div className="absolute inset-0 z-10 px-[7%] py-[8%] flex flex-col">
+          {/* Content overlay — a sibling of the card so it's never clipped by the bloom.
+              Vertical padding is fixed (not %-of-width) so it stays compact on wide screens
+              and the info cards never get pushed out of the fixed-height stage. */}
+          <div className="absolute inset-0 z-10 px-[7%] py-6 sm:py-7 lg:py-8 xl:py-9 flex flex-col justify-center">
             <motion.span
               style={{ opacity: eyebrowO, y: eyebrowY }}
-              className="uppercase tracking-[0.2em] text-xs font-medium text-white/50 mb-6 block"
+              className="uppercase tracking-[0.2em] text-xs font-medium text-white/50 mb-3 lg:mb-4 block"
             >
               Ana Mağaza
             </motion.span>
@@ -208,7 +210,7 @@ export function Location() {
             </h2>
 
             {/* Paragraph — scroll-scrubbed word-by-word reveal (speaks the site's TextReveal language) */}
-            <p className="text-white/70 text-base md:text-lg font-light leading-relaxed mt-8 mb-10 max-w-md lg:max-w-lg">
+            <p className="text-white/70 text-sm md:text-base lg:text-lg font-light leading-relaxed mt-4 mb-8 lg:mt-5 lg:mb-10 max-w-md lg:max-w-lg">
               {PARAGRAPH.split(' ').map((word, i, arr) => {
                 const step = (PARA_B - PARA_A) / arr.length;
                 const start = PARA_A + i * step;
@@ -220,27 +222,29 @@ export function Location() {
               })}
             </p>
 
-            {/* Drawn rule + info cards, held to the bottom of the stage */}
-            <div className="mt-auto max-w-4xl">
+            {/* Drawn rule + info cards — part of the centered block, not pinned to the bottom */}
+            <div className="max-w-4xl">
               <motion.div
                 style={{ scaleX: dividerScaleX }}
-                className="h-px w-full bg-white/15 origin-left mb-8"
+                className="h-px w-full bg-white/15 origin-left mb-4 lg:mb-5"
               />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
                 {/* Location — assembles from the left */}
                 <motion.div
                   style={{ opacity: c1O, x: c1X, y: c1Y }}
-                  className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-[2rem] p-8 hover:bg-white/10 transition-colors duration-500 flex flex-col h-full group"
+                  className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-[1.25rem] p-4 lg:p-5 hover:bg-white/10 transition-colors duration-500 flex flex-col h-full group"
                 >
-                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform duration-500">
-                  <MapPin className="w-4 h-4" />
+                <div className="flex items-center gap-2.5 mb-3">
+                  <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform duration-500">
+                    <MapPin className="w-3.5 h-3.5" />
+                  </div>
+                  <h4 className="text-white font-medium text-sm">Konum</h4>
                 </div>
-                <h4 className="text-white font-medium text-lg mb-2">Konum</h4>
-                <p className="text-white/60 font-light text-sm leading-relaxed mb-6 flex-grow">
+                <p className="text-white/60 font-light text-sm leading-relaxed mb-3 flex-grow">
                   Mithatpaşa Caddesi No:651<br />
                   Siteler Mahallesi, İzmir
                 </p>
-                <a href="https://maps.app.goo.gl/cN8DDk2KxbBAzgrk6" target="_blank" rel="noopener noreferrer" className="inline-flex items-center space-x-2 text-sm font-medium text-white/80 hover:text-white transition-colors mt-auto group/link">
+                <a href="https://maps.app.goo.gl/cN8DDk2KxbBAzgrk6" target="_blank" rel="noopener noreferrer" className="inline-flex items-center space-x-1.5 text-sm font-medium text-white/80 hover:text-white transition-colors mt-auto group/link">
                   <span>Yol Tarifi Al</span>
                   <ArrowUpRight className="w-4 h-4 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
                 </a>
@@ -249,18 +253,20 @@ export function Location() {
               {/* Hours — rises from below */}
               <motion.div
                 style={{ opacity: c2O, y: c2Y }}
-                className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-[2rem] p-8 hover:bg-white/10 transition-colors duration-500 flex flex-col group"
+                className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-[1.25rem] p-4 lg:p-5 hover:bg-white/10 transition-colors duration-500 flex flex-col group"
               >
-                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform duration-500">
-                  <Clock className="w-4 h-4" />
+                <div className="flex items-center gap-2.5 mb-3">
+                  <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform duration-500">
+                    <Clock className="w-3.5 h-3.5" />
+                  </div>
+                  <h4 className="text-white font-medium text-sm">Çalışma Saatleri</h4>
                 </div>
-                <h4 className="text-white font-medium text-lg mb-4">Çalışma Saatleri</h4>
-                <div className="space-y-2 text-sm font-light text-white/60">
-                  <div className="flex justify-between border-b border-white/5 pb-2">
+                <div className="space-y-1.5 text-sm font-light text-white/60">
+                  <div className="flex justify-between border-b border-white/5 pb-1.5">
                     <span>Pzt - Cmt</span>
                     <span className="text-white">10:00 - 19:00</span>
                   </div>
-                  <div className="flex justify-between pt-1">
+                  <div className="flex justify-between">
                     <span>Pazar</span>
                     <span className="text-white/40">Kapalı</span>
                   </div>
@@ -270,15 +276,17 @@ export function Location() {
               {/* Contact — assembles from the right */}
               <motion.div
                 style={{ opacity: c3O, x: c3X, y: c3Y }}
-                className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-[2rem] p-8 hover:bg-white/10 transition-colors duration-500 flex flex-col group"
+                className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-[1.25rem] p-4 lg:p-5 hover:bg-white/10 transition-colors duration-500 flex flex-col group"
               >
-                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform duration-500">
-                  <Mail className="w-4 h-4" />
+                <div className="flex items-center gap-2.5 mb-3">
+                  <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform duration-500">
+                    <Mail className="w-3.5 h-3.5" />
+                  </div>
+                  <h4 className="text-white font-medium text-sm">İletişim</h4>
                 </div>
-                <h4 className="text-white font-medium text-lg mb-4">İletişim</h4>
-                <div className="space-y-2 text-sm font-light flex flex-col">
-                  <a href="tel:+902325550123" className="text-white/60 hover:text-white transition-colors mb-2">+90 (232) 555 0123</a>
-                  <a href="mailto:hello@formet-outdoor.com" className="text-white/60 hover:text-white transition-colors">hello@formet-outdoor.com</a>
+                <div className="space-y-1.5 text-sm font-light flex flex-col">
+                  <a href="tel:+902325550123" className="text-white/60 hover:text-white transition-colors">+90 (232) 555 0123</a>
+                  <a href="mailto:hello@formet-outdoor.com" className="text-white/60 hover:text-white transition-colors break-all">hello@formet-outdoor.com</a>
                 </div>
                 </motion.div>
               </div>

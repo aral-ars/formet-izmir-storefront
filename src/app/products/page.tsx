@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { SlidersHorizontal, Grid3x3, LayoutList, ChevronDown, Plus, X, ArrowUpDown } from 'lucide-react';
 import { PRODUCTS, CATEGORIES, type Product } from '../../data';
-import { ProductsNavbar } from '../../components/ProductsNavbar';
+import { Navbar } from '../../components/Navbar';
 import { Footer } from '../../components/Footer';
 import { TextReveal, LineReveal } from '../../components/TextReveal';
 import { SpotlightCard } from '../../components/SpotlightCard';
@@ -63,7 +63,7 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-sand-light text-earth-dark selection:bg-earth selection:text-sand-light overflow-x-hidden">
-      <ProductsNavbar />
+      <Navbar forceDarkText />
 
       {/* Hero Banner */}
       <section className="pt-28 sm:pt-32 pb-16 sm:pb-20 px-6 lg:px-8">
@@ -107,13 +107,13 @@ export default function ProductsPage() {
           <div className="bg-white/70 backdrop-blur-xl rounded-2xl border border-white/50 shadow-sm px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             
             {/* Left: Filter Toggles */}
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap sm:overflow-hidden sm:flex-1">
               {/* Mobile filter toggle */}
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="sm:hidden flex items-center gap-2 px-4 py-2 rounded-full border border-earth/15 text-sm font-medium hover:bg-earth/5 transition-colors cursor-pointer"
+                className="sm:hidden flex items-center gap-2 px-4 py-2 rounded-full border border-earth/15 text-sm font-medium hover:bg-earth/5 transition-colors cursor-pointer shrink-0"
               >
-                <SlidersHorizontal className="w-4 h-4" />
+                <SlidersHorizontal className="w-4 h-4 shrink-0" />
                 <span>Filtreler</span>
                 {selectedCategory !== 'all' && (
                   <span className="w-2 h-2 rounded-full bg-earth-dark" />
@@ -121,12 +121,12 @@ export default function ProductsPage() {
               </button>
 
               {/* Desktop category pills */}
-              <div className="hidden sm:flex items-center gap-2 flex-wrap">
+              <div className="hidden sm:flex items-center gap-2 overflow-x-auto no-scrollbar w-full">
                 {FILTER_CATEGORIES.map((cat) => (
                   <button
                     key={cat.value}
                     onClick={() => setSelectedCategory(cat.value)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 cursor-pointer ${
+                    className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 cursor-pointer ${
                       selectedCategory === cat.value
                         ? 'bg-earth-dark text-sand-light shadow-md shadow-earth-dark/20'
                         : 'bg-transparent text-earth/70 hover:bg-earth/8 hover:text-earth-dark'
@@ -139,17 +139,17 @@ export default function ProductsPage() {
             </div>
 
             {/* Right: Sort + View Mode */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 shrink-0">
               {/* Sort Dropdown */}
-              <div className="relative">
+              <div className="relative shrink-0">
                 <button
                   onClick={() => setShowSortDropdown(!showSortDropdown)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full border border-earth/15 text-sm font-medium hover:bg-earth/5 transition-colors cursor-pointer"
+                  className="flex items-center gap-2 px-4 py-2 rounded-full border border-earth/15 text-sm font-medium hover:bg-earth/5 transition-colors cursor-pointer shrink-0 whitespace-nowrap"
                 >
-                  <ArrowUpDown className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">{activeSortLabel}</span>
-                  <span className="sm:hidden">Sırala</span>
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showSortDropdown ? 'rotate-180' : ''}`} />
+                  <ArrowUpDown className="w-3.5 h-3.5 shrink-0" />
+                  <span className="hidden sm:inline whitespace-nowrap">{activeSortLabel}</span>
+                  <span className="sm:hidden whitespace-nowrap">Sırala</span>
+                  <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform ${showSortDropdown ? 'rotate-180' : ''}`} />
                 </button>
 
                 <AnimatePresence>
@@ -389,7 +389,6 @@ function ProductGridCard({
                 <h3 className="text-[20px] font-display font-medium tracking-tight group-hover:text-earth transition-colors leading-tight">
                   {product.name}
                 </h3>
-                <p className="text-xs text-earth/50 mt-1.5 uppercase tracking-widest">{product.category === 'details' ? 'Aksesuarlar' : product.category}</p>
               </div>
               <span className="font-sans font-normal text-lg text-earth/70 whitespace-nowrap pt-0.5">
                 {product.price}
@@ -443,9 +442,6 @@ function ProductListCard({
                   <h3 className="text-[20px] font-display font-medium group-hover:text-earth transition-colors">
                     {product.name}
                   </h3>
-                  <p className="text-xs text-earth/40 uppercase tracking-wider mt-1">
-                    {product.category === 'details' ? 'Aksesuarlar' : product.category}
-                  </p>
                 </div>
                 <span className="font-sans font-normal text-lg text-earth-dark whitespace-nowrap">
                   {product.price}

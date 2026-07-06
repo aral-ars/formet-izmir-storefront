@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, Variants } from 'motion/react';
 import { ASSETS } from '../data';
 import { TransitionLink } from './TransitionLink';
 import { ArrowRightCircle, ArrowUpRight } from 'lucide-react';
@@ -9,21 +9,21 @@ interface MobileMenuProps {
   onClose: () => void;
 }
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { y: '100%' },
   visible: (i: number) => ({
     y: '0%',
     transition: {
       duration: 0.65,
       delay: 0.45 + i * 0.1,
-      ease: [0.33, 1, 0.68, 1] as [number, number, number, number]
+      ease: [0.33, 1, 0.68, 1]
     }
   }),
   exit: {
     y: '0%',
     transition: {
       duration: 0.85,
-      ease: [0.76, 0, 0.24, 1] as [number, number, number, number]
+      ease: [0.76, 0, 0.24, 1]
     }
   }
 };
@@ -53,7 +53,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             initial={{ y: '-100%' }}
             animate={{ y: '0%' }}
             exit={{ y: '-100%' }}
-            transition={{ duration: 0.85, ease: [0.76, 0, 0.24, 1] as [number, number, number, number] }}
+            transition={{ duration: 0.85, ease: [0.76, 0, 0.24, 1] }}
             className="absolute inset-0 bg-white flex flex-col justify-end pb-8 text-earth-dark pt-20"
           >
             {/* Bottom Info - Rides the slide down */}
@@ -88,7 +88,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             initial={{ y: '0%' }}
             animate={{ y: '0%' }}
             exit={{ y: '-100%' }}
-            transition={{ duration: 0.85, ease: [0.76, 0, 0.24, 1] as [number, number, number, number] }}
+            transition={{ duration: 0.85, ease: [0.76, 0, 0.24, 1] }}
             className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center pt-24 pb-[300px] md:pb-[320px]"
           >
             <div className="flex flex-col items-center justify-center space-y-4 md:space-y-6">

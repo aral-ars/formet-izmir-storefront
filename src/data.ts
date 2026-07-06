@@ -12,6 +12,12 @@ export const ASSETS = {
   santanaTable: 'https://raw.githubusercontent.com/aral-ars/formet-izmir-storefront/main/public/assets/santana-table.png',
 };
 
+// A selectable finish/fabric option: display name + swatch color.
+export interface ColorOption {
+  name: string;
+  hex: string;
+}
+
 export interface Product {
   id: number;
   name: string;
@@ -23,6 +29,8 @@ export interface Product {
   category: string;
   description: string;
   specs: { label: string; value: string }[];
+  // Finish/fabric options, when the piece is offered in more than one.
+  colors?: ColorOption[];
 }
 
 export const PRODUCTS: Product[] = [
@@ -41,6 +49,12 @@ export const PRODUCTS: Product[] = [
       { label: 'Boyutlar', value: '280cm G x 89cm D x 71cm Y' },
       { label: 'Ağırlık', value: '65 kg' },
       { label: 'Bakım', value: 'Makinede yıkanabilir minder kılıfları' }
+    ],
+    colors: [
+      { name: 'Kum', hex: '#D9CBB2' },
+      { name: 'Antrasit', hex: '#3C3A36' },
+      { name: 'Zeytin Yeşili', hex: '#6E7253' },
+      { name: 'Fildişi', hex: '#F1EBDD' }
     ]
   },
   {
@@ -58,6 +72,11 @@ export const PRODUCTS: Product[] = [
       { label: 'Boyutlar', value: '81cm G x 86cm D x 76cm Y' },
       { label: 'Ağırlık', value: '16 kg' },
       { label: 'Bakım', value: 'Yılda bir kez tik yağı uygulayın' }
+    ],
+    colors: [
+      { name: 'Doğal', hex: '#C9B79C' },
+      { name: 'Kum', hex: '#D9CBB2' },
+      { name: 'Antrasit', hex: '#3C3A36' }
     ]
   },
   {
@@ -109,6 +128,11 @@ export const PRODUCTS: Product[] = [
       { label: 'Boyutlar', value: '198cm G x 96cm D x 71cm Y' },
       { label: 'Ağırlık', value: '43 kg' },
       { label: 'Bakım', value: 'Yılda bir kez tik yağı uygulayın' }
+    ],
+    colors: [
+      { name: 'Doğal', hex: '#C9B79C' },
+      { name: 'Antrasit', hex: '#3C3A36' },
+      { name: 'Taş', hex: '#B9B4AC' }
     ]
   },
   {
@@ -174,9 +198,14 @@ export const PRODUCTS: Product[] = [
     description: 'Pisa koleksiyonu için özel olarak tasarlanmış premium yedek minderler. Sunbrella® performans kumaşı ve hızlı kuruyan sünger çekirdeğine sahip olan bu minderler solmaya, küfe ve lekelere karşı dayanıklıdır.',
     specs: [
       { label: 'Materyal', value: 'Sunbrella® kumaş, Hızlı kuruyan sünger' },
-      { label: 'Renkler', value: 'Kum, Antrasit, Zeytin Yeşili, Fildişi' },
       { label: 'Ağırlık', value: '5.5 kg (set)' },
       { label: 'Bakım', value: 'Makinede yıkanabilir kılıflar' }
+    ],
+    colors: [
+      { name: 'Kum', hex: '#D9CBB2' },
+      { name: 'Antrasit', hex: '#3C3A36' },
+      { name: 'Zeytin Yeşili', hex: '#6E7253' },
+      { name: 'Fildişi', hex: '#F1EBDD' }
     ]
   },
 ];
@@ -238,6 +267,18 @@ export const REVIEWS = [
     authorInitial: 'S',
     rating: 5,
     text: 'Sıradan veranda mobilyaları gibi görünmeden sert hava koşullarına dayanabilecek modern bir yemek masası arıyordum. Formet tam ihtiyacım olanı sundu. Şiddetle tavsiye ederim!',
+  },
+  {
+    authorName: 'David Wright',
+    authorInitial: 'D',
+    rating: 5,
+    text: 'Koleksiyonlar tam anlamıyla büyüleyici. Yeni Santana gündüz kanepesi, bahçemizdeki en favori dinlenme köşesi oldu. Malzeme kalitesi beklediğimin çok ötesinde.',
+  },
+  {
+    authorName: 'Cathy Lee',
+    authorInitial: 'C',
+    rating: 4,
+    text: 'Harika tasarım ve mükemmel müşteri hizmetleri. İlk başta renk seçimi konusunda kararsızdım ancak sağladıkları danışmanlık çok yardımcı oldu. Çok memnun kaldık.',
   },
 ];
 

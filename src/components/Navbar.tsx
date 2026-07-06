@@ -1,14 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Heart, Search, X } from 'lucide-react';
 import { ASSETS } from '../data';
 import { MobileMenu } from './MobileMenu';
+import { TransitionLink } from './TransitionLink';
 
-export function Navbar() {
+export function Navbar({ forceDarkText = false }: { forceDarkText?: boolean } = {}) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMenuAnimating, setIsMenuAnimating] = useState(false);
+  const isInitialRender = useRef(true);
+
+  const useDarkText = forceDarkText || isScrolled || isMenuOpen;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -19,6 +23,11 @@ export function Navbar() {
   }, []);
 
   useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+    
     setIsMenuAnimating(true);
     const timer = setTimeout(() => setIsMenuAnimating(false), 850);
     return () => clearTimeout(timer);
@@ -35,24 +44,24 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 flex items-center justify-between">
         
         {/* Logo */}
-        <div className="flex-shrink-0 h-4 md:h-5 flex items-center">
+        <TransitionLink href="/" className="flex-shrink-0 h-4 md:h-5 flex items-center cursor-pointer">
           <img 
-            src={!(isScrolled || isMenuOpen) ? ASSETS.formetWordmarkWhite : ASSETS.formetWordmarkBlack} 
+            src={!useDarkText ? ASSETS.formetWordmarkWhite : ASSETS.formetWordmarkBlack} 
             alt="Formet" 
             className="h-full w-auto object-contain transition-all duration-500"
           />
-        </div>
+        </TransitionLink>
           
         {/* Desktop Links */}
         <div className="hidden md:flex items-center space-x-8">
-          <a href="#collections" className={`text-sm font-medium transition-colors ${!(isScrolled || isMenuOpen) ? 'text-white hover:text-white/70' : 'text-earth-dark hover:text-earth'}`}>Koleksiyonlar</a>
-          <a href="#featured" className={`text-sm font-medium transition-colors ${!(isScrolled || isMenuOpen) ? 'text-white hover:text-white/70' : 'text-earth-dark hover:text-earth'}`}>Öne Çıkanlar</a>
-          <a href="#showroom" className={`text-sm font-medium transition-colors ${!(isScrolled || isMenuOpen) ? 'text-white hover:text-white/70' : 'text-earth-dark hover:text-earth'}`}>Mağaza</a>
-          <a href="#faq" className={`text-sm font-medium transition-colors ${!(isScrolled || isMenuOpen) ? 'text-white hover:text-white/70' : 'text-earth-dark hover:text-earth'}`}>SSS</a>
+          <a href="#collections" className={`text-sm font-medium transition-colors ${!useDarkText ? 'text-white hover:text-white/70' : 'text-earth-dark hover:text-earth'}`}>Koleksiyonlar</a>
+          <a href="#featured" className={`text-sm font-medium transition-colors ${!useDarkText ? 'text-white hover:text-white/70' : 'text-earth-dark hover:text-earth'}`}>Öne Çıkanlar</a>
+          <a href="#showroom" className={`text-sm font-medium transition-colors ${!useDarkText ? 'text-white hover:text-white/70' : 'text-earth-dark hover:text-earth'}`}>Mağaza</a>
+          <a href="#faq" className={`text-sm font-medium transition-colors ${!useDarkText ? 'text-white hover:text-white/70' : 'text-earth-dark hover:text-earth'}`}>SSS</a>
         </div>
         
         {/* Icons */}
-        <div className={`flex items-center gap-1 sm:gap-2 ${!(isScrolled || isMenuOpen) ? 'text-white' : 'text-earth-dark'}`}>
+        <div className={`flex items-center gap-1 sm:gap-2 ${!useDarkText ? 'text-white' : 'text-earth-dark'}`}>
           
           <div className="hidden md:flex items-center">
             <div className="flex items-center mr-2">
@@ -69,7 +78,7 @@ export function Navbar() {
                       type="text" 
                       placeholder="Ara..." 
                       autoFocus
-                      className={`w-full bg-transparent border-b outline-none px-2 py-1 text-sm transition-colors ${!(isScrolled || isMenuOpen) ? 'border-white/50 placeholder:text-white/50 text-white' : 'border-earth-dark/30 placeholder:text-earth-dark/50 text-earth-dark'}`}
+                      className={`w-full bg-transparent border-b outline-none px-2 py-1 text-sm transition-colors ${!useDarkText ? 'border-white/50 placeholder:text-white/50 text-white' : 'border-earth-dark/30 placeholder:text-earth-dark/50 text-earth-dark'}`}
                     />
                   </motion.div>
                 )}

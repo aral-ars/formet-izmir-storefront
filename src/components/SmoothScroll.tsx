@@ -13,28 +13,28 @@ import { useEffect, useState } from 'react';
 const LERP = 0.08;
 
 export function SmoothScroll({ children }: { children: React.ReactNode }) {
-    // Respect prefers-reduced-motion: lerp 1 = no easing (native, instant scroll).
-    const [reduce, setReduce] = useState(false);
-    useEffect(() => {
-        const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-        const update = () => setReduce(mq.matches);
-        update();
-        mq.addEventListener('change', update);
-        return () => mq.removeEventListener('change', update);
-    }, []);
+  // Respect prefers-reduced-motion: lerp 1 = no easing (native, instant scroll).
+  const [reduce, setReduce] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setReduce(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
 
-    return (
-        <ReactLenis
-            root
-            options={{
-                lerp: reduce ? 1 : LERP,
-                smoothWheel: !reduce,
-                // Touch stays native — mobile momentum already feels right and syncing it
-                // tends to fight the OS. Flip syncTouch on only if you want it smoothed too.
-                syncTouch: false,
-            }}
-        >
-            {children}
-        </ReactLenis>
-    );
+  return (
+    <ReactLenis
+      root
+      options={{
+        lerp: reduce ? 1 : LERP,
+        smoothWheel: !reduce,
+        // Touch stays native — mobile momentum already feels right and syncing it
+        // tends to fight the OS. Flip syncTouch on only if you want it smoothed too.
+        syncTouch: false,
+      }}
+    >
+      {children}
+    </ReactLenis>
+  );
 }

@@ -4,7 +4,9 @@ import { ChevronDown } from 'lucide-react';
 import { FAQS } from '../data';
 import { TextReveal, LineReveal } from './TextReveal';
 
-export function FAQ() {
+type FaqItem = { question: string; answer: string };
+
+export function FAQ({ faqs = FAQS }: { faqs?: FaqItem[] }) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
@@ -19,7 +21,7 @@ export function FAQ() {
       </div>
 
       <div className="space-y-4">
-        {FAQS.map((faq, index) => {
+        {faqs.map((faq, index) => {
           const isOpen = openIndex === index;
           
           return (

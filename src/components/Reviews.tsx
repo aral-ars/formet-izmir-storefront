@@ -6,10 +6,18 @@ import { Star, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 import { REVIEWS } from '../data';
 import { TextReveal, LineReveal } from './TextReveal';
 
-const AVG_RATING =
-  REVIEWS.reduce((sum, r) => sum + r.rating, 0) / REVIEWS.length;
+type ReviewCard = {
+  authorName: string;
+  authorInitial: string;
+  rating: number;
+  date: string;
+  text: string;
+};
 
-export function Reviews() {
+export function Reviews({ reviews = REVIEWS }: { reviews?: ReviewCard[] }) {
+  const avgRating = reviews.length
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+    : 0;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -68,8 +76,8 @@ export function Reviews() {
 
   return (
     <section id="reviews" className="px-1.5 md:px-4 pt-4 md:pt-6 pb-4 md:pb-8">
-      <div className="max-w-7xl mx-auto rounded-[2rem] md:rounded-[2.5rem] bg-sand/40 px-6 md:px-12 lg:px-16 py-12 md:py-20">
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-16 gap-6 md:gap-8">
+      <div className="max-w-7xl mx-auto rounded-[2rem] md:rounded-[2.5rem] bg-sand/40 px-6 md:px-12 lg:px-16 pt-12 md:pt-20 pb-4 md:pb-8">
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-4 md:mb-8 gap-6 md:gap-8">
         <div className="text-left">
           <TextReveal as="h2" className="text-3xl md:text-5xl font-display font-semibold mb-3 md:mb-4" accentWords={['Deneyimleri']}>
             Müşteri Deneyimleri
@@ -90,18 +98,18 @@ export function Reviews() {
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
-                  className={`w-4 h-4 ${i < Math.round(AVG_RATING) ? 'text-[#F4B400] fill-[#F4B400]' : 'text-earth/20'}`}
+                  className={`w-4 h-4 ${i < Math.round(avgRating) ? 'text-[#F4B400] fill-[#F4B400]' : 'text-earth/20'}`}
                 />
               ))}
             </div>
             <span className="text-sm text-earth-dark">
-              <span className="font-semibold">{AVG_RATING.toFixed(1)}</span>
-              <span className="text-earth/50"> · {REVIEWS.length} değerlendirme</span>
+              <span className="font-semibold">{avgRating.toFixed(1)}</span>
+              <span className="text-earth/50"> · {reviews.length} değerlendirme</span>
             </span>
           </motion.div>
         </div>
 
-        <div className="hidden md:flex items-center space-x-4">
+        <div className="hidden md:flex items-center space-x-4 z-10">
           <button
             onClick={() => scroll('left')}
             className="w-12 h-12 rounded-full border border-earth/20 flex items-center justify-center text-earth hover:bg-earth/5 transition-colors"
@@ -121,9 +129,9 @@ export function Reviews() {
 
       <div
         ref={scrollContainerRef}
-        className="flex gap-4 md:gap-6 lg:gap-8 overflow-x-auto snap-x snap-mandatory pb-4 md:pb-8 -mx-6 px-6 md:-mx-12 md:px-12 lg:-mx-16 lg:px-16 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        className="flex gap-4 md:gap-6 lg:gap-8 overflow-x-auto snap-x snap-mandatory pt-4 md:pt-8 pb-12 md:pb-20 w-[calc(100%+1.5rem)] md:w-[calc(100%+3rem)] lg:w-[calc(100%+4rem)] pr-6 md:pr-12 lg:pr-16 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
       >
-        {REVIEWS.map((review, index) => (
+        {reviews.map((review, index) => (
           <motion.div
             key={index}
             initial={{ opacity: 0, y: 40 }}
@@ -161,7 +169,7 @@ export function Reviews() {
       {/* Mobile pagination dots — position/count feedback the arrows can't give on touch.
           Each button is a 44px-tall tap target; the visible dot inside stays small. */}
       <div className="flex md:hidden items-center justify-center mt-4">
-        {REVIEWS.map((_, i) => (
+        {reviews.map((_, i) => (
           <button
             key={i}
             onClick={() => scrollToIndex(i)}

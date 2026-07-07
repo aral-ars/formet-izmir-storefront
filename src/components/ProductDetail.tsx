@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MessageCircle, ChevronRight, ChevronDown, Plus, Share2, Heart, ShieldCheck, Truck, Wrench } from 'lucide-react';
-import { PRODUCTS, formatPrice, type Product } from '../data';
+import { formatPrice, type Product } from '../data';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { TransitionLink } from './TransitionLink';
@@ -71,9 +71,10 @@ const SPEC_LABEL_TR: Record<string, string> = {
 
 interface ProductDetailClientProps {
   product: Product;
+  related: Product[];
 }
 
-export function ProductDetailClient({ product }: ProductDetailClientProps) {
+export function ProductDetailClient({ product, related }: ProductDetailClientProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -111,9 +112,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
     }
   };
 
-  const relatedProducts = PRODUCTS.filter(
-    (p) => p.category === product.category && p.id !== product.id
-  ).slice(0, 3);
+  const relatedProducts = related.slice(0, 3);
 
   const handleWhatsApp = () => {
     const colorNote = selectedColor ? ` – ${selectedColor}` : '';

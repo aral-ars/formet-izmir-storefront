@@ -75,7 +75,7 @@ async function seed() {
   console.log('Categories…');
   for (const [i, cat] of CATEGORIES.entries()) {
     await client.createOrReplace({
-      _id: `category.${cat.id}`,
+      _id: `category-${cat.id}`,
       _type: 'category',
       name: cat.name,
       slug: { _type: 'slug', current: cat.id },
@@ -90,13 +90,13 @@ async function seed() {
   console.log('\nProducts…');
   for (const [i, p] of PRODUCTS.entries()) {
     await client.createOrReplace({
-      _id: `product.${p.slug}`,
+      _id: `product-${p.slug}`,
       _type: 'product',
       name: p.name,
       slug: { _type: 'slug', current: p.slug },
       price: p.price,
       tag: p.tag,
-      category: { _type: 'reference', _ref: `category.${p.category}` },
+      category: { _type: 'reference', _ref: `category-${p.category}` },
       image: await imageField(p.image),
       images: await Promise.all(
         p.images.map(async (src) => ({ _key: randomUUID(), ...(await imageField(src)) })),
@@ -114,7 +114,7 @@ async function seed() {
   console.log('\nReviews…');
   for (const [i, r] of REVIEWS.entries()) {
     await client.createOrReplace({
-      _id: `review.${i}`,
+      _id: `review-${i}`,
       _type: 'review',
       authorName: r.authorName,
       rating: r.rating,
@@ -129,7 +129,7 @@ async function seed() {
   console.log('\nFAQs…');
   for (const [i, f] of FAQS.entries()) {
     await client.createOrReplace({
-      _id: `faq.${i}`,
+      _id: `faq-${i}`,
       _type: 'faq',
       question: f.question,
       answer: f.answer,

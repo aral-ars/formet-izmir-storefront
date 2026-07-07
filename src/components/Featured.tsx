@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'motion/react';
-import { PRODUCTS, formatPrice } from '../data';
+import { PRODUCTS, formatPrice, type Product } from '../data';
 import { ArrowUpRight } from 'lucide-react';
 import { TextReveal, LineReveal } from './TextReveal';
 import { TransitionLink } from './TransitionLink';
@@ -8,11 +8,11 @@ import { ProductModal } from './ProductModal';
 import { LikeButton } from './LikeButton';
 import { PillButton } from './PillButton';
 
-export function Featured() {
+export function Featured({ products = PRODUCTS }: { products?: Product[] }) {
   const [likedProducts, setLikedProducts] = useState<string[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
-  const featured = PRODUCTS.slice(0, 9); // Display up to 9 products
+  const featured = products.slice(0, 9); // Display up to 9 products
 
   const toggleLike = (e: React.MouseEvent, productId: string) => {
     e.preventDefault();

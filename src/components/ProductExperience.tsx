@@ -13,7 +13,7 @@ import {
   Truck,
   Wrench,
 } from 'lucide-react';
-import { PRODUCTS, ASSETS, formatPrice, type Product } from '../data';
+import { ASSETS, formatPrice, type Product } from '../data';
 import { TransitionLink } from './TransitionLink';
 import { Navbar } from './Navbar';
 
@@ -67,7 +67,13 @@ function AccordionItem({
   );
 }
 
-export function ProductExperience({ product }: { product: Product }) {
+export function ProductExperience({
+  product,
+  related,
+}: {
+  product: Product;
+  related: Product[];
+}) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -116,9 +122,7 @@ export function ProductExperience({ product }: { product: Product }) {
     }
   };
 
-  const related = PRODUCTS.filter(
-    (p) => p.category === product.category && p.id !== product.id
-  ).slice(0, 4);
+  const relatedItems = related.slice(0, 4);
 
   // Specs get split: colors drive the config selector, care gets its own panel,
   // everything else lands in the Specifications accordion.
@@ -290,7 +294,7 @@ export function ProductExperience({ product }: { product: Product }) {
           </section>
 
           {/* Pairs well with — its own band; first card centered, next peeks in from the right */}
-          {related.length > 0 && (
+          {relatedItems.length > 0 && (
             <section className="-mx-5 mt-12 bg-sand py-9">
               <div className="mb-5 flex items-end justify-between px-5">
                 <h2 className="font-display text-base font-medium text-earth-dark">Pairs well with</h2>
@@ -302,7 +306,7 @@ export function ProductExperience({ product }: { product: Product }) {
                 </TransitionLink>
               </div>
               <div className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto px-[12%]">
-                {related.map((r) => (
+                {relatedItems.map((r) => (
                   <TransitionLink
                     key={r.id}
                     href={`/products/${r.slug}`}

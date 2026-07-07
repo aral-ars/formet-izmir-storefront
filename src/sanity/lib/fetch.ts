@@ -15,6 +15,8 @@ export async function sanityFetch<const T>({
   tags?: string[];
 }): Promise<T> {
   return client.fetch<T>(query, params, {
-    next: { tags },
+    // Cache indefinitely; the /api/revalidate webhook busts by tag on publish
+    // (on-demand revalidation). Keeps pages static between edits.
+    next: { revalidate: false, tags },
   });
 }

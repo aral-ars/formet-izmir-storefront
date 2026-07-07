@@ -48,8 +48,14 @@ function hoverDelta(index: number, hoveredIndex: number | null) {
   return { x: `${dir * 16}%`, y: '6%', rotate: dir * 4, scale: 0.96, opacity: 0.86, boxShadow: SHADOW_RECEDE };
 }
 
-export function Categories() {
-  const displayCategories = CATEGORIES.slice(0, 5);
+type CategoryCard = { id: string; name: string; image: string; description?: string };
+
+export function Categories({
+  categories = CATEGORIES,
+}: {
+  categories?: CategoryCard[];
+}) {
+  const displayCategories = categories.slice(0, 5);
   const reduce = useReducedMotion();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 

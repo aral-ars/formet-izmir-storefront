@@ -1,11 +1,12 @@
-import { PRODUCTS, getProductBySlug } from '../../../data';
+import { getProductBySlug, getProductSlugs, getProducts } from '@/lib/catalog';
 import { ProductDetailClient } from '../../../components/ProductDetail';
 import { ProductExperience } from '../../../components/ProductExperience';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 
-export function generateStaticParams() {
-  return PRODUCTS.map((p) => ({ slug: p.slug }));
+export async function generateStaticParams() {
+  const slugs = await getProductSlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({
@@ -14,7 +15,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
   if (!product) return { title: 'Product Not Found | Formet' };
 
   return {
@@ -29,18 +30,24 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
   if (!product) notFound();
+
+  // Same-category siblings for the "related products" rails.
+  const all = await getProducts();
+  const related = all.filter(
+    (p) => p.category === product.category && p.slug !== product.slug,
+  );
 
   return (
     <>
       {/* Mobile (< md): immersive product experience */}
       <div className="md:hidden">
-        <ProductExperience product={product} />
+        <ProductExperience product={product} related={related} />
       </div>
       {/* Tablet & desktop (>= md): full two-column layout */}
       <div className="hidden md:block">
-        <ProductDetailClient product={product} />
+        <ProductDetailClient product={product} related={related} />
       </div>
     </>
   );

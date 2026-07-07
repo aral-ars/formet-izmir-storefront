@@ -18,7 +18,8 @@ export interface ColorOption {
 }
 
 export interface Product {
-  id: number;
+  // Local fixtures use a numeric id; Sanity supplies its string _id.
+  id: number | string;
   // URL-safe identifier used for /products/[slug] routing.
   slug: string;
   name: string;

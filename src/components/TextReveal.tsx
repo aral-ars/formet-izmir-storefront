@@ -39,7 +39,6 @@ export function TextReveal({
     <Tag
       ref={ref as any}
       className={`${className}`}
-      style={{ overflow: 'hidden' }}
     >
       {words.map((word, i) => {
         const isAccented = accentWords.some(
@@ -47,7 +46,7 @@ export function TextReveal({
         );
 
         return (
-          <span key={i} className="inline-block overflow-hidden mr-[0.28em] last:mr-0">
+          <span key={i} className="inline-block overflow-hidden mr-[0.28em] last:mr-0 pb-[0.2em] -mb-[0.2em] pt-[0.1em] -mt-[0.1em]">
             <motion.span
               className={`inline-block ${isAccented ? accentClassName : ''}`}
               initial={{ y: '110%', opacity: 0, rotateX: 45 }}
@@ -91,7 +90,7 @@ export function LineReveal({
   const isInView = useInView(ref, { once: true, margin: '-50px' });
 
   return (
-    <span className="block overflow-hidden">
+    <span className="block overflow-hidden pb-[0.2em] -mb-[0.2em] pt-[0.1em] -mt-[0.1em]">
       <Tag ref={ref as any} className={className}>
         <motion.span
           className="block"

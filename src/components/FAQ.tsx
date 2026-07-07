@@ -4,22 +4,24 @@ import { ChevronDown } from 'lucide-react';
 import { FAQS } from '../data';
 import { TextReveal, LineReveal } from './TextReveal';
 
-export function FAQ() {
+type FaqItem = { question: string; answer: string };
+
+export function FAQ({ faqs = FAQS }: { faqs?: FaqItem[] }) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
     <section id="faq" className="py-24 px-6 lg:px-8 max-w-4xl mx-auto">
       <div className="text-center mb-16">
         <TextReveal as="h2" className="text-3xl md:text-5xl font-display font-semibold mb-4">
-          Questions?
+          Sorularınız mı var?
         </TextReveal>
         <LineReveal className="text-lg text-earth/80 tracking-wide" delay={0.2}>
-          Everything you need to know about our products and services.
+          Ürünlerimiz ve hizmetlerimiz hakkında bilmeniz gereken her şey.
         </LineReveal>
       </div>
 
       <div className="space-y-4">
-        {FAQS.map((faq, index) => {
+        {faqs.map((faq, index) => {
           const isOpen = openIndex === index;
           
           return (

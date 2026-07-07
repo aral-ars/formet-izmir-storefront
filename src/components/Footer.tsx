@@ -7,51 +7,51 @@ export function Footer() {
         <div className="md:col-span-1">
           <div className="font-display font-bold text-2xl tracking-tight mb-6">FORMET</div>
           <p className="text-sand-light/60 text-sm max-w-xs">
-            Precision-crafted outdoor furniture. Form meets function in the open air.
+            Hassasiyetle üretilmiş dış mekan mobilyaları. Açık havada form ve işlevin buluşması.
           </p>
         </div>
         
         <div>
-          <h4 className="font-display font-medium text-lg mb-6">Collections</h4>
+          <h4 className="font-display font-medium text-lg mb-6">Koleksiyonlar</h4>
           <ul className="space-y-4 text-sand-light/60 text-sm">
-            <li><a href="#" className="hover:text-sand-light transition-colors">Pisa Modular</a></li>
-            <li><a href="#" className="hover:text-sand-light transition-colors">Santana Lounge</a></li>
-            <li><a href="#" className="hover:text-sand-light transition-colors">Dining Series</a></li>
-            <li><a href="#" className="hover:text-sand-light transition-colors">Accessories</a></li>
+            <li><a href="#" className="hover:text-sand-light transition-colors">Pisa Modüler</a></li>
+            <li><a href="#" className="hover:text-sand-light transition-colors">Santana Dinlenme</a></li>
+            <li><a href="#" className="hover:text-sand-light transition-colors">Yemek Serisi</a></li>
+            <li><a href="#" className="hover:text-sand-light transition-colors">Aksesuarlar</a></li>
           </ul>
         </div>
 
         <div>
-          <h4 className="font-display font-medium text-lg mb-6">Support</h4>
+          <h4 className="font-display font-medium text-lg mb-6">Destek</h4>
           <ul className="space-y-4 text-sand-light/60 text-sm">
-            <li><a href="#faq" className="hover:text-sand-light transition-colors">FAQ</a></li>
-            <li><a href="#" className="hover:text-sand-light transition-colors">Care Guide</a></li>
-            <li><a href="#" className="hover:text-sand-light transition-colors">Warranty</a></li>
-            <li><a href="#" className="hover:text-sand-light transition-colors">Returns</a></li>
+            <li><a href="#faq" className="hover:text-sand-light transition-colors">SSS</a></li>
+            <li><a href="#" className="hover:text-sand-light transition-colors">Bakım Kılavuzu</a></li>
+            <li><a href="#" className="hover:text-sand-light transition-colors">Garanti</a></li>
+            <li><a href="#" className="hover:text-sand-light transition-colors">İadeler</a></li>
           </ul>
         </div>
 
         <div>
-          <h4 className="font-display font-medium text-lg mb-6">Stay Inspired</h4>
-          <p className="text-sand-light/60 text-sm mb-4">Subscribe for new arrivals and styling tips.</p>
+          <h4 className="font-display font-medium text-lg mb-6">İlham Alın</h4>
+          <p className="text-sand-light/60 text-sm mb-4">Yeni ürünler ve stil ipuçları için abone olun.</p>
           <div className="flex bg-white/10 rounded-full p-1 border border-white/10">
             <input 
               type="email" 
-              placeholder="Your email address" 
+              placeholder="E-posta adresiniz" 
               className="bg-transparent border-none outline-none px-4 text-sm text-sand-light w-full placeholder:text-sand-light/40"
             />
             <button className="bg-sand-light text-earth-dark px-4 py-2 rounded-full text-sm font-medium hover:bg-white transition-colors cursor-pointer">
-              Subscribe
+              Abone Ol
             </button>
           </div>
         </div>
       </div>
       
       <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between text-xs text-sand-light/40">
-        <p>&copy; {new Date().getFullYear()} Formet Outdoor Furniture. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} Formet Dış Mekan Mobilyaları. Tüm hakları saklıdır.</p>
         <div className="flex space-x-6 mt-4 md:mt-0">
-          <a href="#" className="hover:text-sand-light transition-colors">Privacy Policy</a>
-          <a href="#" className="hover:text-sand-light transition-colors">Terms of Service</a>
+          <a href="#" className="hover:text-sand-light transition-colors">Gizlilik Politikası</a>
+          <a href="#" className="hover:text-sand-light transition-colors">Hizmet Şartları</a>
         </div>
       </div>
     </footer>

@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { PageTransitionProvider } from "../components/PageTransition";
-import { SmoothScroll } from "../components/SmoothScroll";
+import { Providers } from "../components/Providers";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
-import { TooltipProvider } from "@/components/ui/tooltip";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -28,13 +26,7 @@ export default function RootLayout({
         <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,600,700&display=swap" rel="stylesheet" />
       </head>
       <body>
-        <SmoothScroll>
-          <TooltipProvider>
-            <PageTransitionProvider>
-              {children}
-            </PageTransitionProvider>
-          </TooltipProvider>
-        </SmoothScroll>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

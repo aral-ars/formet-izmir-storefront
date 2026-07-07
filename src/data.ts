@@ -246,7 +246,7 @@ export const CATEGORIES = [
   {
     id: 'swings',
     name: 'Salıncak ve Hamaklar',
-    image: 'https://images.unsplash.com/photo-1596431252998-356de6522fcb?auto=format&fit=crop&q=80&w=800',
+    image: 'https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d?auto=format&fit=crop&q=80&w=800',
     description: 'Doğanın içinde asılı rahatlık.',
   },
   {

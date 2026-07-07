@@ -1,20 +1,20 @@
-import { PRODUCTS } from '../../../data';
+import { PRODUCTS, getProductBySlug } from '../../../data';
 import { ProductDetailClient } from '../../../components/ProductDetail';
 import { ProductExperience } from '../../../components/ProductExperience';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 
 export function generateStaticParams() {
-  return PRODUCTS.map((p) => ({ id: String(p.id) }));
+  return PRODUCTS.map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const { id } = await params;
-  const product = PRODUCTS.find((p) => p.id === Number(id));
+  const { slug } = await params;
+  const product = getProductBySlug(slug);
   if (!product) return { title: 'Product Not Found | Formet' };
 
   return {
@@ -26,10 +26,10 @@ export async function generateMetadata({
 export default async function ProductPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { id } = await params;
-  const product = PRODUCTS.find((p) => p.id === Number(id));
+  const { slug } = await params;
+  const product = getProductBySlug(slug);
   if (!product) notFound();
 
   return (

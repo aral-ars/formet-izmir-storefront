@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'motion/react';
-import { PRODUCTS } from '../data';
+import { PRODUCTS, formatPrice } from '../data';
 import { ArrowUpRight } from 'lucide-react';
 import { TextReveal, LineReveal } from './TextReveal';
 import { TransitionLink } from './TransitionLink';
@@ -90,7 +90,7 @@ export function Featured() {
                     className="h-full"
                   >
                     <TransitionLink 
-                      href={`/products/${product.id}`} 
+                      href={`/products/${product.slug}`}
                       className="block h-full select-none"
                       draggable={false}
                     >
@@ -155,7 +155,7 @@ export function Featured() {
                         {/* Tag & Price Container */}
                         <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6 flex items-center z-10 transition-all duration-500 gap-0 md:group-hover:gap-2">
                           <div className="glass rounded-full font-sans font-normal text-xs md:text-base tracking-wide text-earth-dark whitespace-nowrap overflow-hidden transition-all duration-500 max-w-[120px] opacity-100 px-2 md:px-0 md:max-w-0 md:opacity-0 md:group-hover:max-w-[120px] md:group-hover:opacity-100 flex items-center h-7 md:h-9 md:group-hover:px-4 shadow-sm">
-                            {product.price}
+                            {formatPrice(product.price)}
                           </div>
                           <div className="hidden md:flex glass px-3.5 rounded-full font-sans font-medium text-[11px] tracking-widest uppercase text-earth-dark transition-all duration-500 items-center h-9">
                             {product.tag}

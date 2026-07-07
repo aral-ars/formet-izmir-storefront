@@ -1,15 +1,14 @@
 export const ASSETS = {
-  formetWordmark: 'https://raw.githubusercontent.com/aral-ars/formet-izmir-storefront/main/public/assets/formet-wordmark.png',
-  formetWordmarkBlack: 'https://raw.githubusercontent.com/aral-ars/formet-izmir-storefront/main/public/assets/formet-wordmark-black.png',
-  formetWordmarkWhite: 'https://raw.githubusercontent.com/aral-ars/formet-izmir-storefront/main/public/assets/formet-wordmark-white.png',
-  pisaLifestyle: 'https://raw.githubusercontent.com/aral-ars/formet-izmir-storefront/main/public/assets/pisa-lifestyle.png',
-  pisaSofa: 'https://raw.githubusercontent.com/aral-ars/formet-izmir-storefront/main/public/assets/pisa-sofa.png',
-  pisaTable: 'https://raw.githubusercontent.com/aral-ars/formet-izmir-storefront/main/public/assets/pisa-table.png',
-  santanaChair: 'https://raw.githubusercontent.com/aral-ars/formet-izmir-storefront/main/public/assets/santana-chair.png',
-  santanaDetail: 'https://raw.githubusercontent.com/aral-ars/formet-izmir-storefront/main/public/assets/santana-detail.png',
-  santanaLifestyle: 'https://raw.githubusercontent.com/aral-ars/formet-izmir-storefront/main/public/assets/santana-lifestyle.png',
-  santanaSofa: 'https://raw.githubusercontent.com/aral-ars/formet-izmir-storefront/main/public/assets/santana-sofa.png',
-  santanaTable: 'https://raw.githubusercontent.com/aral-ars/formet-izmir-storefront/main/public/assets/santana-table.png',
+  formetWordmarkBlack: '/assets/formet-wordmark-black.png',
+  formetWordmarkWhite: '/assets/formet-wordmark-white.png',
+  pisaLifestyle: '/assets/pisa-lifestyle.png',
+  pisaSofa: '/assets/pisa-sofa.png',
+  pisaTable: '/assets/pisa-table.png',
+  santanaChair: '/assets/santana-chair.png',
+  santanaDetail: '/assets/santana-detail.png',
+  santanaLifestyle: '/assets/santana-lifestyle.png',
+  santanaSofa: '/assets/santana-sofa.png',
+  santanaTable: '/assets/santana-table.png',
 };
 
 // A selectable finish/fabric option: display name + swatch color.
@@ -20,9 +19,11 @@ export interface ColorOption {
 
 export interface Product {
   id: number;
+  // URL-safe identifier used for /products/[slug] routing.
+  slug: string;
   name: string;
-  price: string;
-  priceValue: number;
+  // Price in Turkish Lira, formatted for display via formatPrice().
+  price: number;
   image: string;
   images: string[];
   tag: string;
@@ -36,9 +37,9 @@ export interface Product {
 export const PRODUCTS: Product[] = [
   {
     id: 1,
+    slug: 'pisa-moduler-kanepe',
     name: 'Pisa Modüler Kanepe',
-    price: '$2,499',
-    priceValue: 2499,
+    price: 2499,
     image: ASSETS.pisaSofa,
     images: [ASSETS.pisaSofa, ASSETS.pisaLifestyle, ASSETS.pisaTable],
     tag: 'Yeni Ürün',
@@ -59,9 +60,9 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 2,
+    slug: 'santana-dinlenme-koltugu',
     name: 'Santana Dinlenme Koltuğu',
-    price: '$899',
-    priceValue: 899,
+    price: 899,
     image: ASSETS.santanaChair,
     images: [ASSETS.santanaChair, ASSETS.santanaDetail, ASSETS.santanaLifestyle],
     tag: 'En Çok Satan',
@@ -81,9 +82,9 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 3,
+    slug: 'santana-yemek-masasi',
     name: 'Santana Yemek Masası',
-    price: '$1,299',
-    priceValue: 1299,
+    price: 1299,
     image: ASSETS.santanaTable,
     images: [ASSETS.santanaTable, ASSETS.santanaLifestyle, ASSETS.santanaChair],
     tag: 'Premium Ahşap',
@@ -98,9 +99,9 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 4,
+    slug: 'pisa-sehpa',
     name: 'Pisa Sehpa',
-    price: '$749',
-    priceValue: 749,
+    price: 749,
     image: ASSETS.pisaTable,
     images: [ASSETS.pisaTable, ASSETS.pisaLifestyle, ASSETS.pisaSofa],
     tag: 'Takım',
@@ -115,9 +116,9 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 5,
+    slug: 'santana-gunduz-kanepesi',
     name: 'Santana Gündüz Kanepesi',
-    price: '$1,899',
-    priceValue: 1899,
+    price: 1899,
     image: ASSETS.santanaSofa,
     images: [ASSETS.santanaSofa, ASSETS.santanaDetail, ASSETS.santanaLifestyle],
     tag: 'Yeni Ürün',
@@ -137,9 +138,9 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 6,
+    slug: 'santana-yan-sehpa',
     name: 'Santana Yan Sehpa',
-    price: '$449',
-    priceValue: 449,
+    price: 449,
     image: ASSETS.santanaDetail,
     images: [ASSETS.santanaDetail, ASSETS.santanaLifestyle, ASSETS.santanaChair],
     tag: 'Temel Parça',
@@ -154,9 +155,9 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 7,
+    slug: 'pisa-yemek-takimi',
     name: 'Pisa Yemek Takımı',
-    price: '$3,899',
-    priceValue: 3899,
+    price: 3899,
     image: ASSETS.pisaLifestyle,
     images: [ASSETS.pisaLifestyle, ASSETS.pisaTable, ASSETS.pisaSofa],
     tag: 'En İyi Fiyat',
@@ -171,9 +172,9 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 8,
+    slug: 'santana-sallanan-sandalye',
     name: 'Santana Sallanan Sandalye',
-    price: '$1,099',
-    priceValue: 1099,
+    price: 1099,
     image: ASSETS.santanaChair,
     images: [ASSETS.santanaChair, ASSETS.santanaDetail, ASSETS.santanaLifestyle],
     tag: 'El Yapımı',
@@ -188,9 +189,9 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 9,
+    slug: 'pisa-dis-mekan-minder-seti',
     name: 'Pisa Dış Mekan Minder Seti',
-    price: '$349',
-    priceValue: 349,
+    price: 349,
     image: ASSETS.pisaSofa,
     images: [ASSETS.pisaSofa, ASSETS.pisaLifestyle, ASSETS.pisaTable],
     tag: 'Aksesuar',
@@ -209,6 +210,19 @@ export const PRODUCTS: Product[] = [
     ]
   },
 ];
+
+// Format a Lira amount for display, e.g. formatPrice(2499) → "₺2.499".
+export function formatPrice(value: number): string {
+  return new Intl.NumberFormat('tr-TR', {
+    style: 'currency',
+    currency: 'TRY',
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+export function getProductBySlug(slug: string): Product | undefined {
+  return PRODUCTS.find((p) => p.slug === slug);
+}
 
 export const CATEGORIES = [
   {

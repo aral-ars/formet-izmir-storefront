@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MessageCircle, ChevronRight, ChevronDown, Plus, Share2, Heart, ShieldCheck, Truck, Wrench } from 'lucide-react';
-import { PRODUCTS, type Product } from '../data';
+import { PRODUCTS, formatPrice, type Product } from '../data';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { TransitionLink } from './TransitionLink';
@@ -118,7 +118,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const handleWhatsApp = () => {
     const colorNote = selectedColor ? ` – ${selectedColor}` : '';
     const text = encodeURIComponent(
-      `Merhaba, ${product.name}${colorNote} (${product.price}) ile ilgileniyorum. Daha fazla bilgi alabilir miyim?`
+      `Merhaba, ${product.name}${colorNote} (${formatPrice(product.price)}) ile ilgileniyorum. Daha fazla bilgi alabilir miyim?`
     );
     window.open(`https://wa.me/1234567890?text=${text}`, '_blank');
   };
@@ -259,7 +259,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                 {product.name}
               </h1>
               <p className="font-sans font-normal text-3xl text-earth/60">
-                {product.price}
+                {formatPrice(product.price)}
               </p>
 
               {/* Config — color selector (only when the product offers a choice) */}
@@ -420,7 +420,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                   }}
                 >
                   <TransitionLink
-                    href={`/products/${related.id}`}
+                    href={`/products/${related.slug}`}
                     className="group block"
                   >
                     <div className="relative aspect-[4/5] rounded-3xl overflow-hidden bg-sand mb-5">
@@ -436,7 +436,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                       {/* Tag & Price Container */}
                       <div className="absolute bottom-4 left-4 flex items-center z-10 transition-all duration-500 gap-0 group-hover:gap-2">
                         <div className="bg-white/80 backdrop-blur-md shadow-lg rounded-full font-sans font-normal text-base tracking-wide text-earth-dark whitespace-nowrap overflow-hidden transition-all duration-500 max-w-0 opacity-0 group-hover:max-w-[120px] group-hover:opacity-100 flex items-center h-9 px-0 group-hover:px-4">
-                          {related.price}
+                          {formatPrice(related.price)}
                         </div>
                         <div className="bg-white/80 backdrop-blur-md shadow-lg px-3.5 rounded-full font-sans font-medium text-[11px] tracking-widest uppercase text-earth-dark transition-all duration-500 flex items-center h-9">
                           {related.tag}
@@ -449,7 +449,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                           {related.name}
                         </h3>
                         <span className="font-sans font-normal text-lg text-earth/70 whitespace-nowrap pt-0.5">
-                          {related.price}
+                          {formatPrice(related.price)}
                         </span>
                       </div>
                     </div>

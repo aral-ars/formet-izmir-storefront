@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { SlidersHorizontal, Grid3x3, LayoutList, ChevronDown, Plus, X, ArrowUpDown } from 'lucide-react';
-import { PRODUCTS, CATEGORIES, type Product } from '../../data';
+import { PRODUCTS, CATEGORIES, formatPrice, type Product } from '../../data';
 import { Navbar } from '../../components/Navbar';
 import { Footer } from '../../components/Footer';
 import { TextReveal, LineReveal } from '../../components/TextReveal';
@@ -21,9 +21,10 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'name-desc', label: 'İsim: Z\'den A\'ya' },
 ];
 
+// Only surface categories that actually have products, so a filter chip never yields an empty result.
 const FILTER_CATEGORIES = [
   { value: 'all', label: 'Tüm Ürünler' },
-  ...CATEGORIES.map(c => ({ value: c.id, label: c.name })),
+  ...CATEGORIES.filter(c => PRODUCTS.some(p => p.category === c.id)).map(c => ({ value: c.id, label: c.name })),
 ];
 
 export default function ProductsPage() {
@@ -40,10 +41,10 @@ export default function ProductsPage() {
 
     switch (sortBy) {
       case 'price-asc':
-        filtered.sort((a, b) => a.priceValue - b.priceValue);
+        filtered.sort((a, b) => a.price - b.price);
         break;
       case 'price-desc':
-        filtered.sort((a, b) => b.priceValue - a.priceValue);
+        filtered.sort((a, b) => b.price - a.price);
         break;
       case 'name-asc':
         filtered.sort((a, b) => a.name.localeCompare(b.name));
@@ -352,7 +353,7 @@ function ProductGridCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.06, ease: 'easeOut' }}
     >
-      <TransitionLink href={`/products/${product.id}`} className="group block cursor-pointer">
+      <TransitionLink href={`/products/${product.slug}`} className="group block cursor-pointer">
         <SpotlightCard
           className="rounded-3xl"
           spotlightColor="rgba(74, 68, 59, 0.07)"
@@ -375,7 +376,7 @@ function ProductGridCard({
             {/* Tag & Price Container */}
             <div className="absolute bottom-4 left-4 flex items-center z-10 transition-all duration-500 gap-0 group-hover:gap-2">
               <div className="bg-white/80 backdrop-blur-md shadow-lg rounded-full font-sans font-normal text-base tracking-wide text-earth-dark whitespace-nowrap overflow-hidden transition-all duration-500 max-w-0 opacity-0 group-hover:max-w-[120px] group-hover:opacity-100 flex items-center h-9 px-0 group-hover:px-4">
-                {product.price}
+                {formatPrice(product.price)}
               </div>
               <div className="bg-white/80 backdrop-blur-md shadow-lg px-3.5 rounded-full font-sans font-medium text-[11px] tracking-widest uppercase text-earth-dark transition-all duration-500 flex items-center h-9">
                 {product.tag}
@@ -391,7 +392,7 @@ function ProductGridCard({
                 </h3>
               </div>
               <span className="font-sans font-normal text-lg text-earth/70 whitespace-nowrap pt-0.5">
-                {product.price}
+                {formatPrice(product.price)}
               </span>
             </div>
           </div>
@@ -418,7 +419,7 @@ function ProductListCard({
       transition={{ duration: 0.4, delay: index * 0.05, ease: 'easeOut' }}
     >
       <TransitionLink
-        href={`/products/${product.id}`}
+        href={`/products/${product.slug}`}
         className="group block cursor-pointer bg-white/50 backdrop-blur-sm rounded-2xl border border-white/60 hover:bg-white/80 hover:shadow-lg transition-all duration-500 overflow-hidden"
       >
         <div className="flex flex-col sm:flex-row">
@@ -444,7 +445,7 @@ function ProductListCard({
                   </h3>
                 </div>
                 <span className="font-sans font-normal text-lg text-earth-dark whitespace-nowrap">
-                  {product.price}
+                  {formatPrice(product.price)}
                 </span>
               </div>
               <p className="text-sm text-earth/60 leading-relaxed line-clamp-2">

@@ -13,7 +13,7 @@ import {
   Truck,
   Wrench,
 } from 'lucide-react';
-import { PRODUCTS, ASSETS, type Product } from '../data';
+import { PRODUCTS, ASSETS, formatPrice, type Product } from '../data';
 import { TransitionLink } from './TransitionLink';
 import { Navbar } from './Navbar';
 
@@ -93,7 +93,7 @@ export function ProductExperience({ product }: { product: Product }) {
   const handleWhatsApp = () => {
     const colorNote = selectedColor ? ` in ${selectedColor}` : '';
     const text = encodeURIComponent(
-      `Hi, I'm interested in the ${product.name}${colorNote} (${product.price}). Could you share more details?`
+      `Hi, I'm interested in the ${product.name}${colorNote} (${formatPrice(product.price)}). Could you share more details?`
     );
     window.open(`https://wa.me/1234567890?text=${text}`, '_blank');
   };
@@ -212,7 +212,7 @@ export function ProductExperience({ product }: { product: Product }) {
               </button>
             </div>
           </div>
-          <p className="mt-3 font-sans text-2xl text-earth/70">{product.price}</p>
+          <p className="mt-3 font-sans text-2xl text-earth/70">{formatPrice(product.price)}</p>
 
           {/* Config — color selector (only when the product offers a choice) */}
           {colorOptions.length > 0 && (
@@ -305,7 +305,7 @@ export function ProductExperience({ product }: { product: Product }) {
                 {related.map((r) => (
                   <TransitionLink
                     key={r.id}
-                    href={`/products/${r.id}`}
+                    href={`/products/${r.slug}`}
                     className="group w-[76%] shrink-0 snap-center"
                   >
                     <div className="relative mb-3 aspect-[4/5] overflow-hidden rounded-2xl bg-sand-light shadow-sm">
@@ -317,7 +317,7 @@ export function ProductExperience({ product }: { product: Product }) {
                     </div>
                     <div className="flex items-baseline justify-between gap-2 px-0.5">
                       <p className="truncate font-display text-sm font-medium text-earth-dark">{r.name}</p>
-                      <p className="shrink-0 text-[13px] text-earth/55">{r.price}</p>
+                      <p className="shrink-0 text-[13px] text-earth/55">{formatPrice(r.price)}</p>
                     </div>
                   </TransitionLink>
                 ))}

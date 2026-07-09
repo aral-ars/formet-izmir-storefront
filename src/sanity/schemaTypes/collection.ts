@@ -1,11 +1,15 @@
 import { defineType, defineField } from 'sanity';
-import { TagIcon } from '@sanity/icons';
+import { StackIcon } from '@sanity/icons';
 
-export const category = defineType({
-  name: 'category',
-  title: 'Kategori',
+// A marketing/series grouping (e.g. "Rattan Koleksiyonu"), distinct from
+// `category` which is the product's functional type (e.g. "Oturma Grubu").
+// A product can belong to at most one category but any collection, including
+// none — not every product is part of a named catalog collection.
+export const collection = defineType({
+  name: 'collection',
+  title: 'Koleksiyon',
   type: 'document',
-  icon: TagIcon,
+  icon: StackIcon,
   fields: [
     defineField({
       name: 'name',
@@ -31,24 +35,12 @@ export const category = defineType({
       title: 'Görsel',
       type: 'image',
       options: { hotspot: true },
-      fields: [
-        defineField({ name: 'alt', title: 'Alternatif Metin', type: 'string' }),
-      ],
-    }),
-    defineField({
-      name: 'comingSoon',
-      title: 'Yakında',
-      type: 'boolean',
-      initialValue: false,
-      description:
-        'İşaretlenirse kategori “Yakında” rozetiyle gösterilir (henüz ürünü olmayan kategoriler için).',
     }),
     defineField({
       name: 'order',
       title: 'Sıra',
       type: 'number',
       initialValue: 0,
-      description: 'Anasayfadaki ve filtrelerdeki sıralama.',
     }),
   ],
   orderings: [

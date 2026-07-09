@@ -1,22 +1,33 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "../components/Providers";
+import { SiteSettingsProvider } from "../components/SiteSettingsProvider";
+import { getSiteSettings } from "@/lib/catalog";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
-import { Analytics } from '@vercel/analytics/next';
+import { draftMode } from "next/headers";
+import { VisualEditing } from "next-sanity/visual-editing";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
   title: "Formet Dış Mekan Mobilyaları",
   description: "Modern dış mekan mobilya mağazası",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const contact = await getSiteSettings();
+  let isDraftMode = false;
+  try {
+    isDraftMode = (await draftMode()).isEnabled;
+  } catch (e) {
+    // Expected to throw in build-time static generation
+  }
+
   return (
     <html lang="tr" className={cn("font-sans", geist.variable)}>
       <head>
@@ -27,8 +38,10 @@ export default function RootLayout({
         <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,600,700&display=swap" rel="stylesheet" />
       </head>
       <body>
-        <Providers>{children}</Providers>
-        <Analytics />
+        <SiteSettingsProvider value={contact}>
+          <Providers>{children}</Providers>
+        </SiteSettingsProvider>
+        {isDraftMode && <VisualEditing />}
       </body>
     </html>
   );

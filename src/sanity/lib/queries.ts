@@ -7,13 +7,23 @@ const productProjection = /* groq */ `
   name,
   "slug": slug.current,
   price,
+  priceOnRequest,
+  availability,
   tag,
   "category": category->slug.current,
+  "collection": collection->slug.current,
+  "collectionName": collection->name,
+  series,
   description,
+  material,
+  care,
   image,
+  "imageAlt": image.alt,
   images,
   specs[]{ label, value },
+  options[]{ title, values[]{ label, hex, "swatch": swatch.asset->url } },
   colors[]{ name, hex },
+  "relatedSlugs": related[]->slug.current,
   order
 `;
 
@@ -41,6 +51,17 @@ export const CATEGORIES_QUERY = defineQuery(`
     name,
     description,
     image,
+    comingSoon,
+    "hasProducts": count(*[_type == "product" && !hidden && references(^._id)]) > 0
+  }
+`);
+
+export const COLLECTIONS_QUERY = defineQuery(`
+  *[_type == "collection"] | order(order asc, name asc){
+    "id": slug.current,
+    name,
+    description,
+    image,
     "hasProducts": count(*[_type == "product" && !hidden && references(^._id)]) > 0
   }
 `);
@@ -55,6 +76,6 @@ export const FAQS_QUERY = defineQuery(`
 
 export const SITE_SETTINGS_QUERY = defineQuery(`
   *[_type == "siteSettings"][0]{
-    title, heroImage, wordmarkDark, wordmarkLight, showroomImages
+    phone, whatsapp, email, address, mapUrl, hours[]{ days, value }
   }
 `);

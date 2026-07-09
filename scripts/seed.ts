@@ -14,7 +14,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
-import { PRODUCTS, CATEGORIES, REVIEWS, FAQS } from '../src/data';
+import { PRODUCTS, CATEGORIES, REVIEWS, FAQS, CONTACT } from '../src/data';
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production';
@@ -138,15 +138,18 @@ async function seed() {
   }
   console.log(`  ✓ ${FAQS.length} FAQs`);
 
-  // 5. Site settings (presentation images) — singleton.
+  // 5. Site settings (contact / showroom details) — singleton.
   console.log('\nSite settings…');
   await client.createOrReplace({
     _id: 'siteSettings',
     _type: 'siteSettings',
     title: 'Formet',
-    heroImage: await imageField('/assets/formet-hero.png'),
-    wordmarkDark: await imageField('/assets/formet-wordmark-black.png'),
-    wordmarkLight: await imageField('/assets/formet-wordmark-white.png'),
+    phone: CONTACT.phone,
+    whatsapp: CONTACT.whatsapp,
+    email: CONTACT.email,
+    address: CONTACT.addressLines.join('\n'),
+    mapUrl: CONTACT.mapUrl,
+    hours: CONTACT.hours.map((h) => ({ _key: randomUUID(), _type: 'hoursRow', ...h })),
   });
   console.log('  ✓ siteSettings');
 

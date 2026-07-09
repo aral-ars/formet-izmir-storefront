@@ -11,11 +11,72 @@ export const ASSETS = {
   santanaTable: '/assets/santana-table.png',
 };
 
+// ── Contact / showroom details ───────────────────────────────────────────
+// Single source of truth for the local (Sanity-unconfigured) build, and the
+// seed source for the `siteSettings` singleton. NOTE: phone / whatsapp / email
+// / mapUrl are placeholders consolidated from the old inline values — confirm
+// the real ones (or set them in Studio once Sanity is connected).
+export interface HoursRow {
+  /** Day range label, e.g. "Pzt - Cmt". */
+  days: string;
+  /** Hours or status, e.g. "10:00 - 19:00" or "Kapalı". */
+  value: string;
+}
+
+export interface Contact {
+  /** Display phone, e.g. "+90 (232) 555 0123". */
+  phone: string;
+  /** WhatsApp number for wa.me links — country code, digits only. */
+  whatsapp: string;
+  email: string;
+  /** Address, one entry per rendered line. */
+  addressLines: string[];
+  /** Google Maps "get directions" link. */
+  mapUrl: string;
+  hours: HoursRow[];
+}
+
+export const CONTACT: Contact = {
+  phone: '+90 (232) 555 0123',
+  whatsapp: '905324567890',
+  email: 'hello@formet-outdoor.com',
+  addressLines: ['Mithatpaşa Caddesi No:651', 'Siteler Mahallesi, İzmir'],
+  mapUrl: 'https://maps.app.goo.gl/cN8DDk2KxbBAzgrk6',
+  hours: [
+    { days: 'Pzt - Cmt', value: '10:00 - 19:00' },
+    { days: 'Pazar', value: 'Kapalı' },
+  ],
+};
+
+/** Build a `tel:` href from a display phone number. */
+export function telHref(phone: string): string {
+  return 'tel:' + phone.replace(/[^\d+]/g, '');
+}
+
 // A selectable finish/fabric option: display name + swatch color.
 export interface ColorOption {
   name: string;
   hex: string;
 }
+
+// One selectable value on an option axis. `hex` → a colour dot, `swatch` → a
+// texture thumbnail, neither → a plain text pill.
+export interface OptionValue {
+  label: string;
+  hex?: string;
+  swatch?: string;
+}
+
+// An independent axis of choice (e.g. "Renk", "Materyal"). A product can carry
+// several at once, so colour and material are picked separately.
+export interface OptionGroup {
+  title: string;
+  values: OptionValue[];
+}
+
+// Product availability status (orders go via WhatsApp — this is a status, not a
+// stock count).
+export type Availability = 'in-stock' | 'made-to-order' | 'sold-out' | 'coming-soon';
 
 export interface Product {
   // Local fixtures use a numeric id; Sanity supplies its string _id.
@@ -23,17 +84,43 @@ export interface Product {
   // URL-safe identifier used for /products/[slug] routing.
   slug: string;
   name: string;
-  // Price in Turkish Lira, formatted for display via formatPrice().
+  // Price in Turkish Lira, formatted for display via priceLabel()/formatPrice().
   price: number;
+  // When true (or price is 0), show "Fiyat için sorun" instead of a number.
+  priceOnRequest?: boolean;
+  availability?: Availability;
   image: string;
+  // Authored alt for the primary image; falls back to the product name.
+  imageAlt?: string;
   images: string[];
   tag: string;
   category: string;
+  // Marketing series grouping (Rattan Koleksiyonu, …) — slug + display name.
+  collection?: string;
+  collectionName?: string;
+  // Model family (e.g. "Eyfel") shared across separate product docs.
+  series?: string;
   description: string;
+  // Promoted out of freeform specs so the detail page can render them in their
+  // own sections without brittle label matching.
+  material?: string;
+  care?: string;
   specs: { label: string; value: string }[];
-  // Finish/fabric options, when the piece is offered in more than one.
+  // Multi-axis options (colour + material). Preferred over `colors`.
+  options?: OptionGroup[];
+  // Legacy single-axis colour list, kept for the local fixtures + old Sanity docs.
   colors?: ColorOption[];
+  // Slugs of editorially-picked related products.
+  relatedSlugs?: string[];
 }
+
+// Human labels for availability statuses.
+export const AVAILABILITY_LABEL: Record<Availability, string> = {
+  'in-stock': 'Stokta',
+  'made-to-order': 'Siparişe özel',
+  'sold-out': 'Tükendi',
+  'coming-soon': 'Yakında',
+};
 
 export const PRODUCTS: Product[] = [
   {
@@ -221,6 +308,25 @@ export function formatPrice(value: number): string {
   }).format(value);
 }
 
+// What to show for a product's price: a formatted amount, or a call-to-inquire
+// label when the piece is price-on-request or has no real price yet (₺0).
+export function priceLabel(product: Pick<Product, 'price' | 'priceOnRequest'>): string {
+  if (product.priceOnRequest || !product.price || product.price <= 0) {
+    return 'Fiyat için sorun';
+  }
+  return formatPrice(product.price);
+}
+
+// Normalise a product's selectable options to the multi-axis shape, falling back
+// to the legacy single `colors` list so old data and local fixtures still render.
+export function getOptionGroups(product: Product): OptionGroup[] {
+  if (product.options?.length) return product.options;
+  if (product.colors?.length) {
+    return [{ title: 'Renk', values: product.colors.map((c) => ({ label: c.name, hex: c.hex })) }];
+  }
+  return [];
+}
+
 export function getProductBySlug(slug: string): Product | undefined {
   return PRODUCTS.find((p) => p.slug === slug);
 }
@@ -271,6 +377,7 @@ export const REVIEWS = [
     rating: 5,
     date: '12 Mayıs 2026',
     text: 'Kesinlikle çarpıcı mobilyalar. Santana oturma grubu arka bahçemizi tamamen dönüştürdü. Tik ağacının kalitesi olağanüstü ve mevsimler boyunca güzelliğini korudu.',
+    image: ASSETS.santanaLifestyle,
   },
   {
     authorName: 'Markus Chen',
@@ -278,6 +385,7 @@ export const REVIEWS = [
     rating: 5,
     date: '28 Nisan 2026',
     text: 'İzmir mağazasını ziyaret ettim ve işçiliğe hayran kaldım. Pisa modüler kanepe sadece şık olmakla kalmıyor, aynı zamanda inanılmaz derecede rahat. Teslimat hızlı ve profesyoneldi.',
+    image: ASSETS.pisaSofa,
   },
   {
     authorName: 'Sarah Jenkins',
@@ -285,6 +393,7 @@ export const REVIEWS = [
     rating: 5,
     date: '15 Mart 2026',
     text: 'Sıradan veranda mobilyaları gibi görünmeden sert hava koşullarına dayanabilecek modern bir yemek masası arıyordum. Formet tam ihtiyacım olanı sundu. Şiddetle tavsiye ederim!',
+    image: ASSETS.santanaTable,
   },
   {
     authorName: 'David Wright',
@@ -292,6 +401,7 @@ export const REVIEWS = [
     rating: 5,
     date: '3 Şubat 2026',
     text: 'Koleksiyonlar tam anlamıyla büyüleyici. Yeni Santana gündüz kanepesi, bahçemizdeki en favori dinlenme köşesi oldu. Malzeme kalitesi beklediğimin çok ötesinde.',
+    image: ASSETS.santanaSofa,
   },
   {
     authorName: 'Cathy Lee',
@@ -299,6 +409,7 @@ export const REVIEWS = [
     rating: 4,
     date: '20 Ocak 2026',
     text: 'Harika tasarım ve mükemmel müşteri hizmetleri. İlk başta renk seçimi konusunda kararsızdım ancak sağladıkları danışmanlık çok yardımcı oldu. Çok memnun kaldık.',
+    image: ASSETS.pisaTable,
   },
 ];
 

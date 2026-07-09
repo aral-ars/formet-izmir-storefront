@@ -14,10 +14,68 @@ interface TextRevealProps {
   stagger?: number;
   /** Whether to use serif italic on specific words */
   accentWords?: string[];
+  /** Words to animate with a typewriter effect */
+  typewriterWords?: string[];
+  /** Speed of typewriter effect per character (seconds) */
+  typewriterSpeed?: number;
   /** Class for accented words */
   accentClassName?: string;
   /** HTML tag to use */
   as?: 'h1' | 'h2' | 'h3' | 'p' | 'span';
+}
+
+function TypewriterWord({ 
+  word, 
+  delay, 
+  speed, 
+  className, 
+  isInView 
+}: { 
+  word: string; 
+  delay: number; 
+  speed: number; 
+  className: string; 
+  isInView: boolean;
+}) {
+  const [charCount, setCharCount] = useState(0);
+  const [hasStarted, setHasStarted] = useState(false);
+
+  useEffect(() => {
+    if (!isInView) {
+      setCharCount(0);
+      setHasStarted(false);
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      setHasStarted(true);
+      let count = 0;
+      const interval = setInterval(() => {
+        count++;
+        setCharCount(count);
+        if (count >= word.length) {
+          clearInterval(interval);
+        }
+      }, speed * 1000);
+      
+      return () => clearInterval(interval);
+    }, delay * 1000);
+
+    return () => clearTimeout(timeout);
+  }, [isInView, word, delay, speed]);
+
+  const showCursor = hasStarted && charCount < word.length;
+
+  return (
+    <span className={className}>
+      <span>{word.slice(0, charCount)}</span>
+      <motion.span
+        animate={showCursor ? { opacity: [1, 0, 1] } : { opacity: 0 }}
+        transition={showCursor ? { duration: 0.8, repeat: Infinity, ease: "linear" } : { duration: 0 }}
+        className="inline-block w-[0.08em] h-[0.9em] bg-current ml-[0.05em]"
+      />
+    </span>
+  );
 }
 
 export function TextReveal({
@@ -27,6 +85,8 @@ export function TextReveal({
   wordDuration = 0.5,
   stagger = 0.04,
   accentWords = [],
+  typewriterWords = [],
+  typewriterSpeed = 0.05,
   accentClassName = 'font-serif italic font-medium',
   as: Tag = 'h2',
 }: TextRevealProps) {
@@ -35,18 +95,48 @@ export function TextReveal({
 
   const words = children.split(' ');
 
+  // Shared wrapper class to ensure identical baseline alignment (via overflow-hidden)
+  // and prevent clipping of large italic descenders/ascenders (via expanded padding + negative margin)
+  const wrapperClass = "inline-block overflow-hidden pb-[0.4em] -mb-[0.4em] pt-[0.1em] -mt-[0.1em] pr-[0.15em] mr-[0.02em] last:-mr-[0.15em]";
+
+  let currentDelay = delay;
+
   return (
     <Tag
       ref={ref as any}
       className={`${className}`}
     >
       {words.map((word, i) => {
+        // Strip trailing punctuation for cleaner matching, without destroying Turkish characters
+        const cleanWord = word.toLowerCase().replace(/[.,!?]+$/, '');
         const isAccented = accentWords.some(
-          (aw) => word.toLowerCase().replace(/[^a-z]/g, '') === aw.toLowerCase()
+          (aw) => cleanWord === aw.toLowerCase()
+        );
+        const isTypewriter = typewriterWords.some(
+          (tw) => cleanWord === tw.toLowerCase()
         );
 
+        const wordBaseDelay = currentDelay;
+
+        if (isTypewriter) {
+          currentDelay += word.length * typewriterSpeed;
+          return (
+            <span key={i} className={wrapperClass}>
+              <TypewriterWord 
+                word={word} 
+                delay={wordBaseDelay} 
+                speed={typewriterSpeed} 
+                className={`inline-block ${isAccented ? accentClassName : ''}`} 
+                isInView={isInView} 
+              />
+            </span>
+          );
+        }
+
+        currentDelay += stagger;
+
         return (
-          <span key={i} className="inline-block overflow-hidden mr-[0.28em] last:mr-0 pb-[0.2em] -mb-[0.2em] pt-[0.1em] -mt-[0.1em]">
+          <span key={i} className={wrapperClass}>
             <motion.span
               className={`inline-block ${isAccented ? accentClassName : ''}`}
               initial={{ y: '110%', opacity: 0, rotateX: 45 }}
@@ -57,7 +147,7 @@ export function TextReveal({
               }
               transition={{
                 duration: wordDuration,
-                delay: delay + i * stagger,
+                delay: wordBaseDelay,
                 ease: [0.22, 1, 0.36, 1],
               }}
             >

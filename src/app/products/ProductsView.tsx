@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { SlidersHorizontal, Grid3x3, LayoutList, ChevronDown, Plus, X, ArrowUpDown } from 'lucide-react';
-import { formatPrice, type Product } from '../../data';
+import { Grid3x3, LayoutList, ChevronDown, Plus, X, ArrowUpDown, Check } from 'lucide-react';
+import { priceLabel, type Product } from '../../data';
 import { Navbar } from '../../components/Navbar';
 import { Footer } from '../../components/Footer';
 import { TextReveal, LineReveal } from '../../components/TextReveal';
@@ -21,33 +21,80 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'name-desc', label: 'İsim: Z\'den A\'ya' },
 ];
 
-type ProductsViewProps = {
-  products: Product[];
-  categories: { id: string; name: string; hasProducts: boolean }[];
+type Category = {
+  id: string;
+  name: string;
+  image: string;
+  description?: string;
+  hasProducts: boolean;
 };
 
-export function ProductsView({ products, categories }: ProductsViewProps) {
-  const [selectedCategory, setSelectedCategory] = useState('all');
+type ProductsViewProps = {
+  products: Product[];
+  categories: Category[];
+  // Initial filters, e.g. from /products?category=lounge or ?collection=rattan.
+  initialCategory?: string;
+  initialCollection?: string;
+};
+
+// One entry in the collection rail: a value to filter by, plus the imagery/count
+// shown on the tile. `all` is synthesised from every product.
+type RailItem = { value: string; label: string; image: string; count: number };
+
+export function ProductsView({
+  products,
+  categories,
+  initialCategory,
+  initialCollection,
+}: ProductsViewProps) {
+  const [selectedCategory, setSelectedCategory] = useState(
+    initialCategory && categories.some((c) => c.id === initialCategory) ? initialCategory : 'all',
+  );
+  // Collection is an orthogonal filter (marketing series) that ANDs with category.
+  const [selectedCollection, setSelectedCollection] = useState(initialCollection ?? '');
   const [sortBy, setSortBy] = useState<SortOption>('featured');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [showSortDropdown, setShowSortDropdown] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
 
-  // Only surface categories that actually have products, so a filter chip never yields an empty result.
-  const FILTER_CATEGORIES = useMemo(
+  // Product count per category id — drives the "N ürün" line on each rail tile.
+  const countsByCategory = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const p of products) counts[p.category] = (counts[p.category] ?? 0) + 1;
+    return counts;
+  }, [products]);
+
+  // The collection rail: an "all" tile followed by every category that actually
+  // has products, so a tile never resolves to an empty grid.
+  const RAIL: RailItem[] = useMemo(
     () => [
-      { value: 'all', label: 'Tüm Ürünler' },
+      { value: 'all', label: 'Tüm Ürünler', image: products[0]?.image ?? '', count: products.length },
       ...categories
         .filter((c) => c.hasProducts)
-        .map((c) => ({ value: c.id, label: c.name })),
+        .map((c) => ({
+          value: c.id,
+          label: c.name,
+          image: c.image,
+          count: countsByCategory[c.id] ?? 0,
+        })),
     ],
-    [categories],
+    [categories, products, countsByCategory],
   );
 
+  // Display name of the active collection, derived from the products themselves.
+  const activeCollectionName = useMemo(() => {
+    if (!selectedCollection) return '';
+    return (
+      products.find((p) => p.collection === selectedCollection)?.collectionName ??
+      selectedCollection
+    );
+  }, [products, selectedCollection]);
+
   const filteredAndSortedProducts = useMemo(() => {
-    let filtered = selectedCategory === 'all'
-      ? [...products]
-      : products.filter(p => p.category === selectedCategory);
+    let filtered = products.filter(
+      (p) =>
+        (selectedCategory === 'all' || p.category === selectedCategory) &&
+        (!selectedCollection || p.collection === selectedCollection),
+    );
 
     switch (sortBy) {
       case 'price-asc':
@@ -67,9 +114,9 @@ export function ProductsView({ products, categories }: ProductsViewProps) {
     }
 
     return filtered;
-  }, [products, selectedCategory, sortBy]);
+  }, [products, selectedCategory, selectedCollection, sortBy]);
 
-  const activeCategoryLabel = FILTER_CATEGORIES.find(c => c.value === selectedCategory)?.label || 'Tüm Ürünler';
+  const activeCategoryLabel = RAIL.find(c => c.value === selectedCategory)?.label || 'Tüm Ürünler';
   const activeSortLabel = SORT_OPTIONS.find(s => s.value === sortBy)?.label || 'Öne Çıkanlar';
 
   return (
@@ -77,90 +124,108 @@ export function ProductsView({ products, categories }: ProductsViewProps) {
       <Navbar forceDarkText />
 
       {/* Hero Banner */}
-      <section className="pt-28 sm:pt-32 pb-16 sm:pb-20 px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div>
-            {/* Breadcrumb */}
-            <motion.div
+      <section className="pt-28 sm:pt-32 pb-8 sm:pb-10 px-6 lg:px-8 relative overflow-hidden">
+        {/* Subtle background glow */}
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-[400px] h-[400px] bg-earth/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-40 left-0 -ml-20 w-[300px] h-[300px] bg-sand-dark/20 rounded-full blur-3xl pointer-events-none" />
+        
+        <div className="max-w-7xl mx-auto relative z-10">
+          {/* Breadcrumb */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="flex items-center gap-2 text-[13px] font-medium tracking-wide text-earth/40 mb-10 uppercase"
+          >
+            <a href="/" className="hover:text-earth transition-colors">Anasayfa</a>
+            <span>/</span>
+            <span className="text-earth-dark">Ürünler</span>
+          </motion.div>
+
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-6">
+            <div className="max-w-2xl">
+              <TextReveal
+                as="h1"
+                className="text-4xl sm:text-5xl lg:text-6xl font-serif italic mb-4 leading-[1.1] tracking-tight"
+                delay={0.1}
+              >
+                Koleksiyonumuz
+              </TextReveal>
+              <LineReveal className="text-base sm:text-lg text-earth/60 font-light leading-relaxed tracking-wide" delay={0.35}>
+                Evinizin salonundaki konforu açık havaya taşımak için her parça en iyi malzemelerden özenle üretildi.
+              </LineReveal>
+            </div>
+            
+            <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="flex items-center gap-2 text-sm text-earth/50 mb-8"
+              transition={{ duration: 0.5, delay: 0.5 }}
+              className="hidden lg:block text-right"
             >
-              <a href="/" className="hover:text-earth transition-colors">Anasayfa</a>
-              <span>/</span>
-              <span className="text-earth-dark font-medium">Ürünler</span>
+              <span className="block text-3xl font-display font-light text-earth-dark">{products.length}</span>
+              <span className="text-xs uppercase tracking-widest text-earth/40">Özel Tasarım</span>
             </motion.div>
-
-            <TextReveal
-              as="h1"
-              className="text-4xl sm:text-5xl lg:text-6xl font-display font-semibold mb-5 leading-[1.1] tracking-[-0.02em]"
-              accentWords={['collection']}
-              delay={0.1}
-            >
-              Koleksiyonumuz
-            </TextReveal>
-            <LineReveal className="text-lg sm:text-xl text-earth/70 max-w-2xl font-light leading-relaxed tracking-wide" delay={0.35}>
-              Evinizin salonundaki konforu açık havaya taşımak için her parça en iyi malzemelerden özenle üretildi.
-            </LineReveal>
           </div>
         </div>
       </section>
 
-      {/* Filters & Sort Bar */}
-      <section className="px-6 lg:px-8 sticky top-[72px] sm:top-[76px] z-40">
+      {/* Unified Sticky Control Bar */}
+      <section className="px-6 lg:px-8 sticky top-[72px] sm:top-[76px] z-40 pb-6">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
           className="max-w-7xl mx-auto"
         >
-          <div className="bg-white/70 backdrop-blur-xl rounded-2xl border border-white/50 shadow-sm px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="relative bg-white/70 backdrop-blur-2xl rounded-2xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col sm:flex-row sm:items-center justify-between p-2 gap-4">
             
-            {/* Left: Filter Toggles */}
-            <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap sm:overflow-hidden sm:flex-1">
-              {/* Mobile filter toggle */}
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="sm:hidden flex items-center gap-2 px-4 py-2 rounded-full border border-earth/15 text-sm font-medium hover:bg-earth/5 transition-colors cursor-pointer shrink-0"
-              >
-                <SlidersHorizontal className="w-4 h-4 shrink-0" />
-                <span>Filtreler</span>
-                {selectedCategory !== 'all' && (
-                  <span className="w-2 h-2 rounded-full bg-earth-dark" />
-                )}
-              </button>
-
-              {/* Desktop category pills */}
-              <div className="hidden sm:flex items-center gap-2 overflow-x-auto no-scrollbar w-full">
-                {FILTER_CATEGORIES.map((cat) => (
+            {/* Category Pills (Scrollable) */}
+            <div className="flex-1 overflow-x-auto no-scrollbar scroll-px-2">
+              <div className="flex items-center gap-1.5 w-max px-2 sm:px-0">
+                {RAIL.map((cat) => (
                   <button
                     key={cat.value}
                     onClick={() => setSelectedCategory(cat.value)}
-                    className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 cursor-pointer ${
+                    className={`relative px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 cursor-pointer ${
                       selectedCategory === cat.value
-                        ? 'bg-earth-dark text-sand-light shadow-md shadow-earth-dark/20'
-                        : 'bg-transparent text-earth/70 hover:bg-earth/8 hover:text-earth-dark'
+                        ? 'text-earth-dark'
+                        : 'text-earth/50 hover:text-earth-dark hover:bg-earth/5'
                     }`}
                   >
-                    {cat.label}
+                    {selectedCategory === cat.value && (
+                      <motion.div
+                        layoutId="activeCategory"
+                        className="absolute inset-0 bg-white rounded-xl shadow-sm border border-earth/5"
+                        initial={false}
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                    <span className="relative z-10 flex items-center gap-2">
+                      {cat.label}
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                        selectedCategory === cat.value 
+                          ? 'bg-earth/10 text-earth-dark' 
+                          : 'bg-earth/5 text-earth/40'
+                      }`}>
+                        {cat.count}
+                      </span>
+                    </span>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Right: Sort + View Mode */}
-            <div className="flex items-center gap-3 shrink-0">
-              {/* Sort Dropdown */}
+            {/* Controls (Sort + View Mode) */}
+            <div className="flex items-center gap-3 px-2 sm:px-2 pb-2 sm:pb-0 shrink-0 border-t sm:border-t-0 border-earth/5 pt-3 sm:pt-0">
               <div className="relative shrink-0">
                 <button
                   onClick={() => setShowSortDropdown(!showSortDropdown)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full border border-earth/15 text-sm font-medium hover:bg-earth/5 transition-colors cursor-pointer shrink-0 whitespace-nowrap"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-earth/10 bg-white/50 text-sm font-medium hover:bg-white transition-colors cursor-pointer whitespace-nowrap"
                 >
-                  <ArrowUpDown className="w-3.5 h-3.5 shrink-0" />
-                  <span className="hidden sm:inline whitespace-nowrap">{activeSortLabel}</span>
-                  <span className="sm:hidden whitespace-nowrap">Sırala</span>
-                  <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform ${showSortDropdown ? 'rotate-180' : ''}`} />
+                  <ArrowUpDown className="w-3.5 h-3.5 text-earth/50" />
+                  <span className="hidden sm:inline text-earth-dark">{activeSortLabel}</span>
+                  <span className="sm:hidden text-earth-dark">Sırala</span>
+                  <ChevronDown className={`w-3.5 h-3.5 text-earth/50 transition-transform ${showSortDropdown ? 'rotate-180' : ''}`} />
                 </button>
 
                 <AnimatePresence>
@@ -168,23 +233,24 @@ export function ProductsView({ products, categories }: ProductsViewProps) {
                     <>
                       <div className="fixed inset-0 z-10" onClick={() => setShowSortDropdown(false)} />
                       <motion.div
-                        initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                        initial={{ opacity: 0, y: 8, scale: 0.96 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                        exit={{ opacity: 0, y: 8, scale: 0.96 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute right-0 top-full mt-2 w-52 bg-white/90 backdrop-blur-2xl rounded-2xl border border-white/60 shadow-xl py-2 z-20 overflow-hidden"
+                        className="absolute right-0 top-[calc(100%+8px)] w-56 bg-white/95 backdrop-blur-3xl rounded-2xl border border-white/60 shadow-2xl py-2 z-20 overflow-hidden"
                       >
                         {SORT_OPTIONS.map((option) => (
                           <button
                             key={option.value}
                             onClick={() => { setSortBy(option.value); setShowSortDropdown(false); }}
-                            className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer ${
+                            className={`w-full text-left px-5 py-3 text-sm transition-colors cursor-pointer flex items-center justify-between ${
                               sortBy === option.value
-                                ? 'bg-earth-dark/5 text-earth-dark font-medium'
-                                : 'text-earth/70 hover:bg-earth/5 hover:text-earth-dark'
+                                ? 'bg-earth/5 text-earth-dark font-medium'
+                                : 'text-earth/60 hover:bg-earth/5 hover:text-earth-dark'
                             }`}
                           >
                             {option.label}
+                            {sortBy === option.value && <Check className="w-4 h-4 text-earth-dark" />}
                           </button>
                         ))}
                       </motion.div>
@@ -194,11 +260,11 @@ export function ProductsView({ products, categories }: ProductsViewProps) {
               </div>
 
               {/* View Mode Toggle */}
-              <div className="hidden sm:flex items-center bg-earth/5 rounded-full p-1">
+              <div className="hidden sm:flex items-center bg-earth/5 rounded-xl p-1">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-full transition-all cursor-pointer ${
-                    viewMode === 'grid' ? 'bg-white shadow-sm text-earth-dark' : 'text-earth/50 hover:text-earth-dark'
+                  className={`p-2 rounded-lg transition-all cursor-pointer ${
+                    viewMode === 'grid' ? 'bg-white shadow-sm text-earth-dark' : 'text-earth/40 hover:text-earth-dark'
                   }`}
                   aria-label="Grid view"
                 >
@@ -206,8 +272,8 @@ export function ProductsView({ products, categories }: ProductsViewProps) {
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-full transition-all cursor-pointer ${
-                    viewMode === 'list' ? 'bg-white shadow-sm text-earth-dark' : 'text-earth/50 hover:text-earth-dark'
+                  className={`p-2 rounded-lg transition-all cursor-pointer ${
+                    viewMode === 'list' ? 'bg-white shadow-sm text-earth-dark' : 'text-earth/40 hover:text-earth-dark'
                   }`}
                   aria-label="List view"
                 >
@@ -216,136 +282,92 @@ export function ProductsView({ products, categories }: ProductsViewProps) {
               </div>
             </div>
           </div>
-
-          {/* Mobile filter panel */}
-          <AnimatePresence>
-            {showFilters && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="sm:hidden overflow-hidden"
-              >
-                <div className="bg-white/70 backdrop-blur-xl rounded-2xl border border-white/50 shadow-sm mt-3 px-5 py-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-sm font-medium text-earth-dark">Kategoriler</span>
-                    {selectedCategory !== 'all' && (
-                      <button
-                        onClick={() => setSelectedCategory('all')}
-                        className="text-xs text-earth/50 hover:text-earth-dark transition-colors flex items-center gap-1 cursor-pointer"
-                      >
-                        <X className="w-3 h-3" />
-                        Temizle
-                      </button>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {FILTER_CATEGORIES.map((cat) => (
-                      <button
-                        key={cat.value}
-                        onClick={() => { setSelectedCategory(cat.value); setShowFilters(false); }}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 cursor-pointer ${
-                          selectedCategory === cat.value
-                            ? 'bg-earth-dark text-sand-light shadow-md shadow-earth-dark/20'
-                            : 'bg-earth/5 text-earth/70 hover:bg-earth/10 hover:text-earth-dark'
-                        }`}
-                      >
-                        {cat.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </motion.div>
       </section>
 
-      {/* Results Count */}
-      <section className="px-6 lg:px-8 mt-8 mb-6">
-        <div className="max-w-7xl mx-auto">
-          <motion.p
-            key={`${selectedCategory}-${sortBy}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-sm text-earth/50"
-          >
-            Gösteriliyor: <span className="text-earth-dark font-medium">{filteredAndSortedProducts.length}</span>{' '}
-            ürün
-            {selectedCategory !== 'all' && (
-              <> (<span className="text-earth-dark font-medium">{activeCategoryLabel}</span> kategorisinde)</>
-            )}
-          </motion.p>
-        </div>
-      </section>
+      {/* Active collection filter chip */}
+      {selectedCollection && (
+        <section className="px-6 lg:px-8 pb-2">
+          <div className="max-w-7xl mx-auto flex items-center gap-2">
+            <span className="text-sm text-earth/50">Koleksiyon:</span>
+            <button
+              onClick={() => setSelectedCollection('')}
+              className="inline-flex items-center gap-1.5 rounded-full bg-earth-dark text-sand-light pl-3.5 pr-2.5 py-1.5 text-sm font-medium hover:bg-earth transition-colors cursor-pointer"
+            >
+              {activeCollectionName}
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </section>
+      )}
 
-      {/* Products Grid / List */}
-      <section className="px-6 lg:px-8 pb-24">
+      {/* Products Grid / List inside the signature rounded section shell */}
+      <section className="px-6 lg:px-8 pt-6 pb-24">
         <div className="max-w-7xl mx-auto">
-          <AnimatePresence mode="wait">
-            {filteredAndSortedProducts.length === 0 ? (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="text-center py-24"
-              >
-                <p className="text-2xl font-display text-earth/40 mb-4">Ürün bulunamadı</p>
-                <p className="text-earth/40 mb-8">Aradığınızı bulmak için filtrelerinizi ayarlamayı deneyin.</p>
-                <button
-                  onClick={() => setSelectedCategory('all')}
-                  className="px-6 py-3 rounded-full bg-earth-dark text-sand-light font-medium hover:bg-earth transition-colors cursor-pointer"
+          <div className="rounded-[2rem] bg-sand/30 p-4 sm:p-6 lg:p-8">
+            <AnimatePresence mode="wait">
+              {filteredAndSortedProducts.length === 0 ? (
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="text-center py-24"
                 >
-                  Tüm Ürünleri Gör
-                </button>
-              </motion.div>
-            ) : viewMode === 'grid' ? (
-              <motion.div
-                key={`grid-${selectedCategory}-${sortBy}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
-              >
-                {filteredAndSortedProducts.map((product, index) => (
-                  <ProductGridCard
-                    key={product.id}
-                    product={product}
-                    index={index}
-                  />
-                ))}
-              </motion.div>
-            ) : (
-              <motion.div
-                key={`list-${selectedCategory}-${sortBy}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="flex flex-col gap-5"
-              >
-                {filteredAndSortedProducts.map((product, index) => (
-                  <ProductListCard
-                    key={product.id}
-                    product={product}
-                    index={index}
-                  />
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
+                  <p className="text-2xl font-display text-earth/40 mb-4">Ürün bulunamadı</p>
+                  <p className="text-earth/40 mb-8">Aradığınızı bulmak için filtrelerinizi ayarlamayı deneyin.</p>
+                  <button
+                    onClick={() => setSelectedCategory('all')}
+                    className="px-6 py-3 rounded-full bg-earth-dark text-sand-light font-medium hover:bg-earth transition-colors cursor-pointer"
+                  >
+                    Tüm Ürünleri Gör
+                  </button>
+                </motion.div>
+              ) : viewMode === 'grid' ? (
+                <motion.div
+                  key={`grid-${selectedCategory}-${sortBy}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
+                >
+                  {filteredAndSortedProducts.map((product, index) => (
+                    <ProductGridCard
+                      key={product.id}
+                      product={product}
+                      index={index}
+                    />
+                  ))}
+                </motion.div>
+              ) : (
+                <motion.div
+                  key={`list-${selectedCategory}-${sortBy}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex flex-col gap-5"
+                >
+                  {filteredAndSortedProducts.map((product, index) => (
+                    <ProductListCard
+                      key={product.id}
+                      product={product}
+                      index={index}
+                    />
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </section>
 
       <Footer />
-
-
     </div>
   );
 }
+
 
 
 /* ─── Grid Card ─────────────────────────────────────────────────────── */
@@ -386,11 +408,13 @@ function ProductGridCard({
             {/* Tag & Price Container */}
             <div className="absolute bottom-4 left-4 flex items-center z-10 transition-all duration-500 gap-0 group-hover:gap-2">
               <div className="bg-white/80 backdrop-blur-md shadow-lg rounded-full font-sans font-normal text-base tracking-wide text-earth-dark whitespace-nowrap overflow-hidden transition-all duration-500 max-w-0 opacity-0 group-hover:max-w-[120px] group-hover:opacity-100 flex items-center h-9 px-0 group-hover:px-4">
-                {formatPrice(product.price)}
+                {priceLabel(product)}
               </div>
-              <div className="bg-white/80 backdrop-blur-md shadow-lg px-3.5 rounded-full font-sans font-medium text-[11px] tracking-widest uppercase text-earth-dark transition-all duration-500 flex items-center h-9">
-                {product.tag}
-              </div>
+              {product.tag && (
+                <div className="bg-white/80 backdrop-blur-md shadow-lg px-3.5 rounded-full font-sans font-medium text-[11px] tracking-widest uppercase text-earth-dark transition-all duration-500 flex items-center h-9">
+                  {product.tag}
+                </div>
+              )}
             </div>
           </div>
 
@@ -402,7 +426,7 @@ function ProductGridCard({
                 </h3>
               </div>
               <span className="font-sans font-normal text-lg text-earth/70 whitespace-nowrap pt-0.5">
-                {formatPrice(product.price)}
+                {priceLabel(product)}
               </span>
             </div>
           </div>
@@ -440,9 +464,11 @@ function ProductListCard({
               alt={product.name}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
-            <div className="absolute bottom-3 left-3 glass px-3 py-1 rounded-full text-xs font-medium tracking-widest uppercase">
-              {product.tag}
-            </div>
+            {product.tag && (
+              <div className="absolute bottom-3 left-3 glass px-3 py-1 rounded-full text-xs font-medium tracking-widest uppercase">
+                {product.tag}
+              </div>
+            )}
           </div>
 
           {/* Info */}
@@ -455,7 +481,7 @@ function ProductListCard({
                   </h3>
                 </div>
                 <span className="font-sans font-normal text-lg text-earth-dark whitespace-nowrap">
-                  {formatPrice(product.price)}
+                  {priceLabel(product)}
                 </span>
               </div>
               <p className="text-sm text-earth/60 leading-relaxed line-clamp-2">

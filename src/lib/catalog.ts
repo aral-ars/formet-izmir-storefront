@@ -8,6 +8,7 @@ import {
   PRODUCT_BY_SLUG_QUERY,
   PRODUCT_SLUGS_QUERY,
   CATEGORIES_QUERY,
+  COLLECTIONS_QUERY,
   REVIEWS_QUERY,
   FAQS_QUERY,
   SITE_SETTINGS_QUERY,
@@ -17,13 +18,22 @@ import {
   CATEGORIES as LOCAL_CATEGORIES,
   REVIEWS as LOCAL_REVIEWS,
   FAQS as LOCAL_FAQS,
-  ASSETS,
+  CONTACT,
   type Product,
+  type Contact,
 } from '@/data';
 
 // Shapes the storefront components consume. Product/Review reuse existing shapes;
 // Category adds `hasProducts` so the shop page can hide empty filter chips.
 export type Category = {
+  id: string;
+  name: string;
+  description?: string;
+  image: string;
+  hasProducts: boolean;
+  comingSoon?: boolean;
+};
+export type Collection = {
   id: string;
   name: string;
   description?: string;
@@ -38,17 +48,14 @@ export type Review = {
   text: string;
 };
 export type Faq = { question: string; answer: string };
-export type SiteSettings = {
-  heroImage?: string;
-  wordmarkDark: string;
-  wordmarkLight: string;
-  showroomImages: string[];
-};
+// Contact / showroom details are shaped exactly like the local `Contact`.
+export type SiteSettings = Contact;
 
 // Revalidation tags (match Sanity document _type; busted by /api/revalidate).
 const TAG = {
   product: 'product',
   category: 'category',
+  collection: 'collection',
   review: 'review',
   faq: 'faq',
   siteSettings: 'siteSettings',
@@ -65,20 +72,44 @@ function img(source: unknown, width: number): string {
 
 function mapProduct(doc: Record<string, any>): Product {
   const gallery = doc.images?.length ? doc.images : [doc.image];
+
+  // Prefer the multi-axis `options`; fall back to the legacy `colors` list so
+  // older docs keep rendering. Swatch URLs are already resolved in the query.
+  const options: Product['options'] = doc.options?.length
+    ? doc.options.map((g: any) => ({
+        title: g.title,
+        values: (g.values ?? []).map((v: any) => ({
+          label: v.label,
+          hex: v.hex || undefined,
+          swatch: v.swatch || undefined,
+        })),
+      }))
+    : undefined;
+
   return {
     id: doc.id,
     slug: doc.slug,
     name: doc.name,
-    price: doc.price,
+    price: doc.price ?? 0,
+    priceOnRequest: Boolean(doc.priceOnRequest),
+    availability: doc.availability ?? undefined,
     image: img(doc.image, 1400),
+    imageAlt: doc.imageAlt ?? undefined,
     images: gallery.map((i: unknown) => img(i, 1600)),
     tag: doc.tag ?? '',
     category: doc.category ?? '',
+    collection: doc.collection ?? undefined,
+    collectionName: doc.collectionName ?? undefined,
+    series: doc.series ?? undefined,
     description: doc.description ?? '',
+    material: doc.material ?? undefined,
+    care: doc.care ?? undefined,
     specs: (doc.specs ?? []).map((s: any) => ({ label: s.label, value: s.value })),
+    options,
     colors: doc.colors?.length
       ? doc.colors.map((c: any) => ({ name: c.name, hex: c.hex }))
       : undefined,
+    relatedSlugs: doc.relatedSlugs?.filter(Boolean) ?? undefined,
   };
 }
 
@@ -132,7 +163,34 @@ export async function getCategories(): Promise<Category[]> {
     description: c.description,
     image: c.image ? img(c.image, 1000) : '',
     hasProducts: Boolean(c.hasProducts),
+    comingSoon: Boolean(c.comingSoon),
   }));
+}
+
+export async function getCollections(): Promise<Collection[]> {
+  // No local fixtures for collections — they only exist once Sanity is wired.
+  if (!isSanityConfigured) return [];
+  const docs = await sanityFetch<Record<string, any>[]>({
+    query: COLLECTIONS_QUERY,
+    tags: [TAG.collection, TAG.product],
+  });
+  return docs.map((c) => ({
+    id: c.id,
+    name: c.name,
+    description: c.description,
+    image: c.image ? img(c.image, 1000) : '',
+    hasProducts: Boolean(c.hasProducts),
+  }));
+}
+
+// Reviews now store a real date (ISO `YYYY-MM-DD`) instead of a pre-formatted
+// string — format it for display here, the same way price is formatted at render.
+// A non-ISO value (e.g. a legacy/local display string) passes through unchanged.
+function formatReviewDate(value: string): string {
+  if (!/^\d{4}-\d{2}-\d{2}/.test(value)) return value;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }).format(d);
 }
 
 export async function getReviews(): Promise<Review[]> {
@@ -145,7 +203,7 @@ export async function getReviews(): Promise<Review[]> {
     authorName: r.authorName,
     authorInitial: (r.authorName?.[0] ?? '').toUpperCase(),
     rating: r.rating,
-    date: r.date ?? '',
+    date: r.date ? formatReviewDate(r.date) : '',
     text: r.text ?? '',
   }));
 }
@@ -159,22 +217,28 @@ export async function getFaqs(): Promise<Faq[]> {
   return docs.map((f) => ({ question: f.question, answer: f.answer }));
 }
 
-export async function getSiteSettings(): Promise<SiteSettings> {
-  const fallback: SiteSettings = {
-    wordmarkDark: ASSETS.formetWordmarkBlack,
-    wordmarkLight: ASSETS.formetWordmarkWhite,
-    showroomImages: [],
-  };
-  if (!isSanityConfigured) return fallback;
+export async function getSiteSettings(): Promise<Contact> {
+  if (!isSanityConfigured) return CONTACT;
   const s = await sanityFetch<Record<string, any> | null>({
     query: SITE_SETTINGS_QUERY,
     tags: [TAG.siteSettings],
   });
-  if (!s) return fallback;
+  if (!s) return CONTACT;
+
+  const addressLines =
+    typeof s.address === 'string'
+      ? s.address.split('\n').map((l: string) => l.trim()).filter(Boolean)
+      : [];
+  const hours = Array.isArray(s.hours) && s.hours.length
+    ? s.hours.map((h: any) => ({ days: h.days ?? '', value: h.value ?? '' }))
+    : CONTACT.hours;
+
   return {
-    heroImage: s.heroImage ? img(s.heroImage, 2000) : undefined,
-    wordmarkDark: s.wordmarkDark ? img(s.wordmarkDark, 400) : fallback.wordmarkDark,
-    wordmarkLight: s.wordmarkLight ? img(s.wordmarkLight, 400) : fallback.wordmarkLight,
-    showroomImages: (s.showroomImages ?? []).map((i: unknown) => img(i, 1600)),
+    phone: s.phone || CONTACT.phone,
+    whatsapp: s.whatsapp || CONTACT.whatsapp,
+    email: s.email || CONTACT.email,
+    addressLines: addressLines.length ? addressLines : CONTACT.addressLines,
+    mapUrl: s.mapUrl || CONTACT.mapUrl,
+    hours,
   };
 }

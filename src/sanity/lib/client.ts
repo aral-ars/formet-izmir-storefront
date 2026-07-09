@@ -9,4 +9,7 @@ export const client = createClient({
   // With on-demand tag revalidation handling freshness at the Next cache layer,
   // the CDN is fine (and cheaper). Published edits propagate within seconds.
   useCdn: true,
+  stega: {
+    studioUrl: '/studio',
+  },
 });

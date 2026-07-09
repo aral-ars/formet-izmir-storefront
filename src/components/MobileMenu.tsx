@@ -1,6 +1,7 @@
 import { motion, AnimatePresence, Variants } from 'motion/react';
 import { ASSETS } from '../data';
 import { TransitionLink } from './TransitionLink';
+import { useContact } from './SiteSettingsProvider';
 import { ArrowRightCircle, ArrowUpRight } from 'lucide-react';
 import { useEffect } from 'react';
 
@@ -29,6 +30,8 @@ const itemVariants: Variants = {
 };
 
 export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
+  const contact = useContact();
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -60,11 +63,11 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             <motion.div 
               className="flex flex-col items-center space-y-4 text-sm font-sans shrink-0 mt-auto"
             >
-              <p className="text-lg md:text-xl">+90 532 456 78 90</p>
+              <p className="text-lg md:text-xl">{contact.phone}</p>
               
               <div className="flex items-center gap-3 text-xl md:text-2xl font-medium border-b-2 border-black pb-1 group cursor-pointer hover:text-earth hover:border-earth transition-colors">
                 <ArrowRightCircle className="w-6 h-6 md:w-7 md:h-7 fill-black text-white group-hover:fill-earth transition-colors" />
-                <a href="mailto:hello@formet.com">hello@formet.com</a>
+                <a href={`mailto:${contact.email}`}>{contact.email}</a>
               </div>
               
               <div className="flex space-x-8 text-earth font-medium pt-2">
@@ -122,7 +125,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   variants={itemVariants}
                 >
                   <a 
-                    href="https://wa.me/905324567890" 
+                    href={`https://wa.me/${contact.whatsapp}`}
                     target="_blank" 
                     rel="noopener noreferrer" 
                     className="group flex items-center gap-2 text-5xl md:text-6xl font-display font-medium tracking-tight text-green-600 hover:text-green-700 transition-colors leading-none block"

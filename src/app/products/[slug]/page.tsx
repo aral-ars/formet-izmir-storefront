@@ -33,11 +33,23 @@ export default async function ProductPage({
   const product = await getProductBySlug(slug);
   if (!product) notFound();
 
-  // Same-category siblings for the "related products" rails.
+  // Related rail, in priority order: editorially-picked → same series (e.g. other
+  // "Eyfel" pieces) → same category. Deduped, self excluded, capped downstream.
   const all = await getProducts();
-  const related = all.filter(
-    (p) => p.category === product.category && p.slug !== product.slug,
-  );
+  const bySlug = new Map(all.map((p) => [p.slug, p]));
+  const seen = new Set<string>([product.slug]);
+  const related: typeof all = [];
+  const add = (candidates: typeof all) => {
+    for (const p of candidates) {
+      if (p && !seen.has(p.slug)) {
+        seen.add(p.slug);
+        related.push(p);
+      }
+    }
+  };
+  add((product.relatedSlugs ?? []).map((s) => bySlug.get(s)!).filter(Boolean));
+  if (product.series) add(all.filter((p) => p.series === product.series));
+  add(all.filter((p) => p.category === product.category));
 
   return (
     <>

@@ -3,7 +3,8 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MessageCircle, ChevronRight, ChevronDown, Plus, Share2, Heart, ShieldCheck, Truck, Wrench } from 'lucide-react';
-import { formatPrice, type Product } from '../data';
+import { priceLabel, getOptionGroups, AVAILABILITY_LABEL, type Product } from '../data';
+import { useContact } from './SiteSettingsProvider';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { TransitionLink } from './TransitionLink';
@@ -58,15 +59,18 @@ const PROMISES = [
 
 const categoryLabelTR = (c: string) => (c === 'details' ? 'Aksesuarlar' : c);
 
-// English spec labels (from data) → Turkish, so the accordion rows read consistently.
-const SPEC_LABEL_TR: Record<string, string> = {
-  Materials: 'Malzemeler',
-  Dimensions: 'Boyutlar',
-  Weight: 'Ağırlık',
-  Care: 'Bakım',
-  Seating: 'Oturma Kapasitesi',
-  Includes: 'İçindekiler',
-  Colors: 'Renkler',
+// Labels that are surfaced elsewhere (dedicated Malzeme/Bakım sections, or the
+// option selector) and so should be dropped from the generic specs table.
+const MATERIAL_RE = /malzeme|materyal|material/i;
+const CARE_RE = /bak[ıi]m|care/i;
+const COLOR_RE = /renk|color/i;
+
+// Small status pill styling per availability state.
+const AVAILABILITY_PILL: Record<string, string> = {
+  'in-stock': 'bg-sage-light/70 text-earth',
+  'made-to-order': 'bg-sand text-earth',
+  'sold-out': 'bg-rose-100 text-rose-700',
+  'coming-soon': 'bg-sand text-earth/70',
 };
 
 interface ProductDetailClientProps {
@@ -75,21 +79,28 @@ interface ProductDetailClientProps {
 }
 
 export function ProductDetailClient({ product, related }: ProductDetailClientProps) {
+  const contact = useContact();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
 
-  // Config options — only shown when the product actually offers a choice.
-  const colorOptions = product.colors ?? [];
-  const [selectedColor, setSelectedColor] = useState(colorOptions[0]?.name ?? '');
+  // Config options — one selector per axis (colour, material, …). Falls back to
+  // the legacy single `colors` list for old data.
+  const optionGroups = getOptionGroups(product);
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(() =>
+    Object.fromEntries(optionGroups.map((g) => [g.title, g.values[0]?.label ?? ''])),
+  );
 
-  // Each topic becomes its own accordion; colors drive the selector.
-  const materialSpec = product.specs.find((s) => s.label.toLowerCase() === 'materials');
-  const careSpec = product.specs.find((s) => s.label.toLowerCase() === 'care');
-  const detailRows = product.specs.filter((s) => {
-    const l = s.label.toLowerCase();
-    return l !== 'colors' && l !== 'care' && l !== 'materials';
-  });
+  // Material & care come from dedicated fields; fall back to matching Turkish
+  // spec labels so legacy/local data still lands in the right sections.
+  const materialText =
+    product.material || product.specs.find((s) => MATERIAL_RE.test(s.label))?.value || '';
+  const careText =
+    product.care || product.specs.find((s) => CARE_RE.test(s.label))?.value || '';
+  // The generic details table: everything not already shown as its own section.
+  const detailRows = product.specs.filter(
+    (s) => !MATERIAL_RE.test(s.label) && !CARE_RE.test(s.label) && !COLOR_RE.test(s.label),
+  );
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const scrollLeft = e.currentTarget.scrollLeft;
@@ -115,11 +126,15 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
   const relatedProducts = related.slice(0, 3);
 
   const handleWhatsApp = () => {
-    const colorNote = selectedColor ? ` – ${selectedColor}` : '';
+    const optionNote = optionGroups
+      .map((g) => selectedOptions[g.title])
+      .filter(Boolean)
+      .join(' / ');
+    const optionPart = optionNote ? ` – ${optionNote}` : '';
     const text = encodeURIComponent(
-      `Merhaba, ${product.name}${colorNote} (${formatPrice(product.price)}) ile ilgileniyorum. Daha fazla bilgi alabilir miyim?`
+      `Merhaba, ${product.name}${optionPart} (${priceLabel(product)}) ile ilgileniyorum. Daha fazla bilgi alabilir miyim?`
     );
-    window.open(`https://wa.me/1234567890?text=${text}`, '_blank');
+    window.open(`https://wa.me/${contact.whatsapp}?text=${text}`, '_blank');
   };
 
   const handleShare = async () => {
@@ -184,7 +199,7 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
                     <div key={idx} className="w-full h-full flex-shrink-0 snap-center relative">
                       <img
                         src={img}
-                        alt={`${product.name} — görünüm ${idx + 1}`}
+                        alt={idx === 0 ? product.imageAlt || product.name : `${product.name} — görünüm ${idx + 1}`}
                         className="w-full h-full object-cover object-center"
                       />
                     </div>
@@ -192,9 +207,11 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
                 </div>
 
                 {/* Tag badge */}
-                <div className="absolute top-5 left-5 glass px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide">
-                  {product.tag}
-                </div>
+                {product.tag && (
+                  <div className="absolute top-5 left-5 glass px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide">
+                    {product.tag}
+                  </div>
+                )}
 
                 {/* Actions overlay */}
                 <div className="absolute top-5 right-5 flex gap-2">
@@ -253,41 +270,95 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
               transition={{ duration: 0.6, delay: 0.15, ease: 'easeOut' }}
               className="w-full lg:w-[42%] flex flex-col"
             >
+              {/* Collection kicker */}
+              {product.collectionName && (
+                <TransitionLink
+                  href={`/products?collection=${product.collection}`}
+                  className="mb-3 inline-flex w-fit items-center text-xs uppercase tracking-[0.2em] text-earth/50 hover:text-earth transition-colors"
+                >
+                  {product.collectionName}
+                </TransitionLink>
+              )}
+
               {/* Title & Price */}
               <h1 className="text-4xl lg:text-5xl font-display font-medium leading-[1.1] mb-3">
                 {product.name}
               </h1>
-              <p className="font-sans font-normal text-3xl text-earth/60">
-                {formatPrice(product.price)}
-              </p>
+              <div className="flex items-center gap-3">
+                <p className="font-sans font-normal text-3xl text-earth/60">
+                  {priceLabel(product)}
+                </p>
+                {product.availability && (
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-medium ${AVAILABILITY_PILL[product.availability] ?? 'bg-sand text-earth'}`}
+                  >
+                    {AVAILABILITY_LABEL[product.availability]}
+                  </span>
+                )}
+              </div>
 
-              {/* Config — color selector (only when the product offers a choice) */}
-              {colorOptions.length > 0 && (
-                <div className="mt-7">
+              {/* Config — one selector per option axis (colour, material, …) */}
+              {optionGroups.map((group) => (
+                <div key={group.title} className="mt-7">
                   <div className="mb-3 flex items-center gap-2">
-                    <span className="text-xs uppercase tracking-[0.2em] text-earth/40 font-medium">Renk</span>
-                    <span className="text-sm font-medium text-earth-dark">{selectedColor}</span>
+                    <span className="text-xs uppercase tracking-[0.2em] text-earth/40 font-medium">
+                      {group.title}
+                    </span>
+                    <span className="text-sm font-medium text-earth-dark">
+                      {selectedOptions[group.title]}
+                    </span>
                   </div>
                   <div className="flex flex-wrap gap-2.5">
-                    {colorOptions.map((c) => {
-                      const active = c.name === selectedColor;
+                    {group.values.map((v) => {
+                      const active = v.label === selectedOptions[group.title];
+                      const select = () =>
+                        setSelectedOptions((s) => ({ ...s, [group.title]: v.label }));
+                      const ring = active
+                        ? 'ring-2 ring-earth-dark ring-offset-2 ring-offset-sand-light'
+                        : 'ring-1 ring-black/10 hover:ring-black/25';
+                      if (v.hex) {
+                        return (
+                          <button
+                            key={v.label}
+                            onClick={select}
+                            aria-label={v.label}
+                            aria-pressed={active}
+                            style={{ backgroundColor: v.hex }}
+                            className={`h-9 w-9 rounded-full transition-all cursor-pointer ${ring}`}
+                          />
+                        );
+                      }
+                      if (v.swatch) {
+                        return (
+                          <button
+                            key={v.label}
+                            onClick={select}
+                            aria-label={v.label}
+                            aria-pressed={active}
+                            className={`h-9 w-9 overflow-hidden rounded-full transition-all cursor-pointer ${ring}`}
+                          >
+                            <img src={v.swatch} alt={v.label} className="h-full w-full object-cover" />
+                          </button>
+                        );
+                      }
                       return (
                         <button
-                          key={c.name}
-                          onClick={() => setSelectedColor(c.name)}
-                          aria-label={c.name}
+                          key={v.label}
+                          onClick={select}
                           aria-pressed={active}
-                          style={{ backgroundColor: c.hex }}
-                          className={`h-9 w-9 rounded-full transition-all cursor-pointer ${active
-                              ? 'ring-2 ring-earth-dark ring-offset-2 ring-offset-sand-light'
-                              : 'ring-1 ring-black/10 hover:ring-black/25'
-                            }`}
-                        />
+                          className={`h-9 rounded-full px-4 text-sm font-medium transition-all cursor-pointer ${
+                            active
+                              ? 'bg-earth-dark text-sand-light'
+                              : 'text-earth-dark ring-1 ring-black/10 hover:ring-black/25'
+                          }`}
+                        >
+                          {v.label}
+                        </button>
                       );
                     })}
                   </div>
                 </div>
-              )}
+              ))}
 
               {/* Divider */}
               <div className="h-px bg-earth/10 my-8" />
@@ -305,10 +376,10 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
               {/* Details — a distinct accordion per section */}
               <div className="mb-10">
                 <div className="divide-y divide-earth/10 border-y border-earth/10">
-                  {materialSpec && (
+                  {materialText && (
                     <AccordionItem title="Malzemeler" defaultOpen>
                       <ul className="space-y-1.5">
-                        {materialSpec.value.split(',').map((m, idx) => (
+                        {materialText.split(',').map((m, idx) => (
                           <li key={idx} className="text-sm leading-relaxed text-earth/70">
                             {m.trim()}
                           </li>
@@ -317,12 +388,12 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
                     </AccordionItem>
                   )}
                   {detailRows.length > 0 && (
-                    <AccordionItem title="Boyutlar ve detaylar" defaultOpen={!materialSpec}>
+                    <AccordionItem title="Boyutlar ve detaylar" defaultOpen={!materialText}>
                       <dl className="space-y-3">
                         {detailRows.map((spec, idx) => (
                           <div key={idx} className="flex items-start justify-between gap-6">
                             <dt className="shrink-0 text-sm text-earth/50 font-medium">
-                              {SPEC_LABEL_TR[spec.label] ?? spec.label}
+                              {spec.label}
                             </dt>
                             <dd className="text-right text-sm font-medium text-earth-dark">{spec.value}</dd>
                           </div>
@@ -330,9 +401,9 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
                       </dl>
                     </AccordionItem>
                   )}
-                  {careSpec && (
+                  {careText && (
                     <AccordionItem title="Bakım ve temizlik">
-                      <p className="text-sm leading-relaxed text-earth/70">{careSpec.value}</p>
+                      <p className="text-sm leading-relaxed text-earth/70">{careText}</p>
                     </AccordionItem>
                   )}
                 </div>
@@ -435,11 +506,13 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
                       {/* Tag & Price Container */}
                       <div className="absolute bottom-4 left-4 flex items-center z-10 transition-all duration-500 gap-0 group-hover:gap-2">
                         <div className="bg-white/80 backdrop-blur-md shadow-lg rounded-full font-sans font-normal text-base tracking-wide text-earth-dark whitespace-nowrap overflow-hidden transition-all duration-500 max-w-0 opacity-0 group-hover:max-w-[120px] group-hover:opacity-100 flex items-center h-9 px-0 group-hover:px-4">
-                          {formatPrice(related.price)}
+                          {priceLabel(related)}
                         </div>
-                        <div className="bg-white/80 backdrop-blur-md shadow-lg px-3.5 rounded-full font-sans font-medium text-[11px] tracking-widest uppercase text-earth-dark transition-all duration-500 flex items-center h-9">
-                          {related.tag}
-                        </div>
+                        {related.tag && (
+                          <div className="bg-white/80 backdrop-blur-md shadow-lg px-3.5 rounded-full font-sans font-medium text-[11px] tracking-widest uppercase text-earth-dark transition-all duration-500 flex items-center h-9">
+                            {related.tag}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="px-1">
@@ -448,7 +521,7 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
                           {related.name}
                         </h3>
                         <span className="font-sans font-normal text-lg text-earth/70 whitespace-nowrap pt-0.5">
-                          {formatPrice(related.price)}
+                          {priceLabel(related)}
                         </span>
                       </div>
                     </div>

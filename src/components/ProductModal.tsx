@@ -2,7 +2,8 @@ import { X, Heart, Share2, Check, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence, useDragControls, PanInfo } from 'motion/react';
 import { useState, useEffect, useRef } from 'react';
 import { TransitionLink } from './TransitionLink';
-import { formatPrice } from '../data';
+import { priceLabel } from '../data';
+import { useContact } from './SiteSettingsProvider';
 
 interface ProductModalProps {
   product: any;
@@ -11,6 +12,7 @@ interface ProductModalProps {
 }
 
 export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
+  const contact = useContact();
   const [activeImage, setActiveImage] = useState(0);
   const [hasSwiped, setHasSwiped] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
@@ -152,7 +154,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                         {product.name}
                       </h2>
                       <div className="font-sans font-normal text-lg md:text-xl text-earth/60 whitespace-nowrap pt-0.5 md:pt-1">
-                        {formatPrice(product.price)}
+                        {priceLabel(product)}
                       </div>
                     </div>
 
@@ -180,7 +182,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                     {/* Desktop Footer (Inline) */}
                     <div className="hidden md:flex mt-auto md:mt-12 gap-4">
                       <a 
-                        href={`https://wa.me/905555555555?text=${encodeURIComponent(`Hi! I'm interested in ordering the ${product.name} (${formatPrice(product.price)}).`)}`}
+                        href={`https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(`Hi! I'm interested in ordering the ${product.name} (${priceLabel(product)}).`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-1 flex items-center justify-center bg-earth-dark text-white py-4 rounded-full font-medium hover:bg-earth transition-colors"
@@ -203,7 +205,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
             {/* Mobile Footer (Pinned) */}
             <div className="flex-shrink-0 bg-sand-light/95 backdrop-blur-xl z-30 p-5 border-t border-earth/10 md:hidden flex gap-4">
               <a 
-                href={`https://wa.me/905555555555?text=${encodeURIComponent(`Hi! I'm interested in ordering the ${product.name} (${formatPrice(product.price)}).`)}`}
+                href={`https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(`Hi! I'm interested in ordering the ${product.name} (${priceLabel(product)}).`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 flex items-center justify-center bg-earth-dark text-white py-4 rounded-full font-medium hover:bg-earth transition-colors"

@@ -23,8 +23,9 @@ export const review = defineType({
     defineField({
       name: 'date',
       title: 'Tarih',
-      type: 'string',
-      description: 'Görüntülenecek tarih, örn. "12 Mayıs 2026".',
+      type: 'date',
+      options: { dateFormat: 'D MMMM YYYY' },
+      description: 'Yorumun tarihi. Görüntüleme biçimi otomatik (örn. "12 Mayıs 2026").',
     }),
     defineField({
       name: 'text',

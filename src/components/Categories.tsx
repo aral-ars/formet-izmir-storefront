@@ -45,10 +45,16 @@ function hoverDelta(index: number, hoveredIndex: number | null) {
 
   // Neighbours part away from the hovered card and recede slightly.
   const dir = index < hoveredIndex ? -1 : 1;
-  return { x: `${dir * 16}%`, y: '6%', rotate: dir * 4, scale: 0.96, opacity: 0.86, boxShadow: SHADOW_RECEDE };
+  return { x: `${dir * 16}%`, y: '6%', rotate: dir * 4, scale: 0.96, opacity: 1, boxShadow: SHADOW_RECEDE };
 }
 
-type CategoryCard = { id: string; name: string; image: string; description?: string };
+type CategoryCard = {
+  id: string;
+  name: string;
+  image: string;
+  description?: string;
+  comingSoon?: boolean;
+};
 
 export function Categories({
   categories = CATEGORIES,
@@ -124,14 +130,21 @@ export function Categories({
                 className="h-full w-full rounded-2xl md:rounded-3xl overflow-hidden bg-white border border-earth/5 flex flex-col"
               >
                 {/* Image Section */}
-                <div className="relative flex-1 w-full overflow-hidden shrink-0">
-                  <img
-                    src={category.image}
-                    alt={category.name}
-                    className="w-full h-[150%] object-cover object-top"
-                  />
+                <div className="relative flex-1 w-full overflow-hidden shrink-0 bg-sand/20">
+                  {category.image ? (
+                    <img
+                      src={category.image}
+                      alt={category.name}
+                      className="w-full h-[150%] object-cover object-top"
+                    />
+                  ) : null}
                   {/* Gradient to blend image into white card */}
                   <div className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-white to-white/0" />
+                  {category.comingSoon && (
+                    <span className="absolute top-3 left-3 rounded-full bg-earth-dark/90 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-sand-light backdrop-blur-md">
+                      Yakında
+                    </span>
+                  )}
                 </div>
 
                 {/* Text Section */}

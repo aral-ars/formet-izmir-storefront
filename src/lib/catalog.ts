@@ -46,6 +46,7 @@ export type Review = {
   rating: number;
   date: string;
   text: string;
+  image?: string;
 };
 export type Faq = { question: string; answer: string };
 // Contact / showroom details are shaped exactly like the local `Contact`.
@@ -205,6 +206,7 @@ export async function getReviews(): Promise<Review[]> {
     rating: r.rating,
     date: r.date ? formatReviewDate(r.date) : '',
     text: r.text ?? '',
+    image: r.image && typeof r.image === 'string' ? r.image : undefined,
   }));
 }
 

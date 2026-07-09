@@ -23,9 +23,8 @@ export const review = defineType({
     defineField({
       name: 'date',
       title: 'Tarih',
-      type: 'date',
-      options: { dateFormat: 'D MMMM YYYY' },
-      description: 'Yorumun tarihi. Görüntüleme biçimi otomatik (örn. "12 Mayıs 2026").',
+      type: 'string',
+      description: 'Yorumun tarihi (örn. "1 ay önce" veya "12 Mayıs 2026").',
     }),
     defineField({
       name: 'text',
@@ -33,6 +32,12 @@ export const review = defineType({
       type: 'text',
       rows: 4,
       validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'image',
+      title: 'Görsel URL',
+      type: 'url',
+      description: 'Yoruma eklenmiş fotoğrafın dış bağlantısı (varsa)',
     }),
     defineField({
       name: 'order',

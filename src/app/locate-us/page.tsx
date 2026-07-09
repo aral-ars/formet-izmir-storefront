@@ -6,8 +6,11 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Map, MapMarker, MarkerContent, MapControls } from "@/components/ui/map";
 import { Store, ArrowUpRight } from "lucide-react";
+import { useContact } from "@/components/SiteSettingsProvider";
+import { telHref } from "@/data";
 
 export default function LocateUs() {
+  const contact = useContact();
   const containerRef = useRef<HTMLDivElement>(null);
   
   const { scrollYProgress } = useScroll({
@@ -72,8 +75,8 @@ export default function LocateUs() {
                  <MapControls position="top-right" showZoom />
                  <MapMarker longitude={26.868203} latitude={38.374036}>
                    <MarkerContent>
-                     <a 
-                       href="https://maps.app.goo.gl/y7aKeQwhuRpXqZXD8"
+                     <a
+                       href={contact.mapUrl}
                        target="_blank"
                        rel="noopener noreferrer"
                        className="relative flex items-center justify-center group cursor-pointer"
@@ -124,13 +127,20 @@ export default function LocateUs() {
             <div className="flex flex-col sm:flex-row gap-6 sm:gap-12 text-sm items-center">
               <div className="flex flex-col items-center">
                 <span className="uppercase tracking-widest text-[10px] font-medium text-earth/50 mb-1.5">Konum</span>
-                <span className="font-light text-earth-dark">Mithatpaşa Cd. No:651<br/>Siteler, İzmir</span>
+                <span className="font-light text-earth-dark">
+                  {contact.addressLines.map((line, i) => (
+                    <span key={i}>
+                      {line}
+                      {i < contact.addressLines.length - 1 && <br />}
+                    </span>
+                  ))}
+                </span>
               </div>
               <div className="w-12 h-px sm:w-px sm:h-8 bg-earth/20"></div>
               <div className="flex flex-col items-center">
                 <span className="uppercase tracking-widest text-[10px] font-medium text-earth/50 mb-1.5">İletişim</span>
-                <a href="tel:+902325550123" className="font-light text-earth-dark hover:text-earth transition-colors">+90 (232) 555 0123</a>
-                <a href="mailto:hello@formet-outdoor.com" className="font-light text-earth-dark hover:text-earth transition-colors mt-0.5">hello@formet-outdoor.com</a>
+                <a href={telHref(contact.phone)} className="font-light text-earth-dark hover:text-earth transition-colors">{contact.phone}</a>
+                <a href={`mailto:${contact.email}`} className="font-light text-earth-dark hover:text-earth transition-colors mt-0.5">{contact.email}</a>
               </div>
             </div>
           </motion.div>

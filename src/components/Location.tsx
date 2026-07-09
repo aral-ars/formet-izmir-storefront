@@ -3,6 +3,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform, useSpring, useMotionValueEvent, MotionValue } from 'motion/react';
 import { MapPin, ArrowUpRight, Mail, Clock } from 'lucide-react';
+import { useContact } from './SiteSettingsProvider';
+import { telHref } from '../data';
 
 /* ── Scroll choreography (progress 0 → 1 over the pinned track) ──
    0.03–0.28  title types out, centered & dark, scrubbed to scroll
@@ -63,6 +65,7 @@ function ScrollWord({ progress, start, end, children }: {
 }
 
 export function Location() {
+  const contact = useContact();
   const sectionRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const ghostRef = useRef<HTMLHeadingElement>(null);
@@ -241,10 +244,14 @@ export function Location() {
                   <h4 className="text-white font-medium text-sm">Konum</h4>
                 </div>
                 <p className="text-white/60 font-light text-sm leading-relaxed mb-3 flex-grow">
-                  Mithatpaşa Caddesi No:651<br />
-                  Siteler Mahallesi, İzmir
+                  {contact.addressLines.map((line, i) => (
+                    <span key={i}>
+                      {line}
+                      {i < contact.addressLines.length - 1 && <br />}
+                    </span>
+                  ))}
                 </p>
-                <a href="https://maps.app.goo.gl/cN8DDk2KxbBAzgrk6" target="_blank" rel="noopener noreferrer" className="inline-flex items-center space-x-1.5 text-sm font-medium text-white/80 hover:text-white transition-colors mt-auto group/link">
+                <a href={contact.mapUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center space-x-1.5 text-sm font-medium text-white/80 hover:text-white transition-colors mt-auto group/link">
                   <span>Yol Tarifi Al</span>
                   <ArrowUpRight className="w-4 h-4 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
                 </a>
@@ -262,14 +269,20 @@ export function Location() {
                   <h4 className="text-white font-medium text-sm">Çalışma Saatleri</h4>
                 </div>
                 <div className="space-y-1.5 text-sm font-light text-white/60">
-                  <div className="flex justify-between border-b border-white/5 pb-1.5">
-                    <span>Pzt - Cmt</span>
-                    <span className="text-white">10:00 - 19:00</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Pazar</span>
-                    <span className="text-white/40">Kapalı</span>
-                  </div>
+                  {contact.hours.map((row, i) => {
+                    const closed = /kapal/i.test(row.value);
+                    return (
+                      <div
+                        key={i}
+                        className={`flex justify-between ${
+                          i < contact.hours.length - 1 ? 'border-b border-white/5 pb-1.5' : ''
+                        }`}
+                      >
+                        <span>{row.days}</span>
+                        <span className={closed ? 'text-white/40' : 'text-white'}>{row.value}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </motion.div>
 
@@ -285,8 +298,8 @@ export function Location() {
                   <h4 className="text-white font-medium text-sm">İletişim</h4>
                 </div>
                 <div className="space-y-1.5 text-sm font-light flex flex-col">
-                  <a href="tel:+902325550123" className="text-white/60 hover:text-white transition-colors">+90 (232) 555 0123</a>
-                  <a href="mailto:hello@formet-outdoor.com" className="text-white/60 hover:text-white transition-colors break-all">hello@formet-outdoor.com</a>
+                  <a href={telHref(contact.phone)} className="text-white/60 hover:text-white transition-colors">{contact.phone}</a>
+                  <a href={`mailto:${contact.email}`} className="text-white/60 hover:text-white transition-colors break-all">{contact.email}</a>
                 </div>
                 </motion.div>
               </div>

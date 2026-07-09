@@ -67,7 +67,7 @@ export const COLLECTIONS_QUERY = defineQuery(`
 `);
 
 export const REVIEWS_QUERY = defineQuery(`
-  *[_type == "review"] | order(order asc){ authorName, rating, date, text }
+  *[_type == "review"] | order(order asc){ authorName, rating, date, text, image }
 `);
 
 export const FAQS_QUERY = defineQuery(`

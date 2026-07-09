@@ -118,9 +118,18 @@ export function Reviews({ reviews = REVIEWS }: { reviews?: ReviewCard[] }) {
                   />
                 ))}
               </div>
-              <span className="text-sm text-earth-dark">
+              <span className="text-sm text-earth-dark flex items-center">
                 <span className="font-semibold">{avgRating.toFixed(1)}</span>
-                <span className="text-earth/50"> · {reviews.length} değerlendirme</span>
+                <span className="text-earth/50 flex items-center">
+                  <span className="mx-1">·</span>
+                  {reviews.length} değerlendirme
+                  <svg viewBox="0 0 48 48" className="w-3.5 h-3.5 ml-2.5" aria-hidden="true">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                  </svg>
+                </span>
               </span>
             </motion.div>
           </div>
@@ -148,14 +157,7 @@ export function Reviews({ reviews = REVIEWS }: { reviews?: ReviewCard[] }) {
           className="flex gap-6 md:gap-8 lg:gap-12 overflow-x-auto snap-x snap-mandatory pt-4 md:pt-8 pb-12 md:pb-20 -mx-4 px-4 scroll-pl-4 md:-mx-6 md:px-6 md:scroll-pl-6 lg:-mx-10 lg:px-10 lg:scroll-pl-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         >
           {reviews.map((review, index) => {
-            const DEMO_IMAGES = [
-              ASSETS.santanaLifestyle,
-              ASSETS.pisaSofa,
-              ASSETS.santanaTable,
-              ASSETS.santanaSofa,
-              ASSETS.pisaTable,
-            ];
-            const demoImage = review.image || DEMO_IMAGES[index % DEMO_IMAGES.length];
+            const reviewImage = review.image;
 
             return (
               <motion.div
@@ -207,13 +209,13 @@ export function Reviews({ reviews = REVIEWS }: { reviews?: ReviewCard[] }) {
                         </div>
 
                         {/* Small Photo at Top Right */}
-                        {demoImage && (
+                        {reviewImage && (
                           <button
-                            onClick={() => setExpandedImage(demoImage)}
+                            onClick={() => setExpandedImage(reviewImage)}
                             className="w-14 h-14 md:w-16 md:h-16 rounded-xl overflow-hidden flex-shrink-0 ml-3 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-earth/50"
                             aria-label="Fotoğrafı büyüt"
                           >
-                            <img src={demoImage} alt={`${review.authorName} review`} className="w-full h-full object-cover" />
+                            <img src={reviewImage} alt={`${review.authorName} review`} className="w-full h-full object-cover" />
                           </button>
                         )}
                       </div>

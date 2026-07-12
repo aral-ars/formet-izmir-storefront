@@ -8,6 +8,7 @@ import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { draftMode } from "next/headers";
 import { VisualEditing } from "next-sanity/visual-editing";
+import { Analytics } from '@vercel/analytics/next';
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -49,6 +50,7 @@ export default async function RootLayout({
           </CatalogNavProvider>
         </SiteSettingsProvider>
         {isDraftMode && <VisualEditing />}
+        <Analytics />
       </body>
     </html>
   );

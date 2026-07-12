@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "../components/Providers";
 import { SiteSettingsProvider } from "../components/SiteSettingsProvider";
-import { getSiteSettings } from "@/lib/catalog";
+import { CatalogNavProvider } from "../components/CatalogNavProvider";
+import { getSiteSettings, getCategories, getCollections } from "@/lib/catalog";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { draftMode } from "next/headers";
@@ -20,7 +21,11 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const contact = await getSiteSettings();
+  const [contact, categories, collections] = await Promise.all([
+    getSiteSettings(),
+    getCategories(),
+    getCollections(),
+  ]);
   let isDraftMode = false;
   try {
     isDraftMode = (await draftMode()).isEnabled;
@@ -39,7 +44,9 @@ export default async function RootLayout({
       </head>
       <body>
         <SiteSettingsProvider value={contact}>
-          <Providers>{children}</Providers>
+          <CatalogNavProvider value={{ categories, collections }}>
+            <Providers>{children}</Providers>
+          </CatalogNavProvider>
         </SiteSettingsProvider>
         {isDraftMode && <VisualEditing />}
       </body>

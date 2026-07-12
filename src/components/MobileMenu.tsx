@@ -104,9 +104,9 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                     exit="exit"
                     variants={itemVariants}
                   >
-                    <TransitionLink 
-                      href={item === 'Koleksiyonlar' || item === 'Öne Çıkanlar' ? '/' : (item === 'Mağaza' ? '/showroom' : '/faq')} 
-                      onClick={onClose} 
+                    <TransitionLink
+                      href={item === 'Koleksiyonlar' || item === 'Öne Çıkanlar' ? '/' : (item === 'Mağaza' ? '/showroom' : '/faq')}
+                      onClick={onClose}
                       className="text-5xl md:text-6xl font-display font-medium tracking-tight hover:text-earth transition-colors block leading-none text-earth-dark"
                     >
                       {item}
@@ -114,7 +114,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   </motion.div>
                 </div>
               ))}
-              
+
               {/* WhatsApp Link */}
               <div className="overflow-hidden px-2 pt-1 pb-2 -mb-2 pointer-events-auto">
                 <motion.div

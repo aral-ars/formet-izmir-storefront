@@ -4,15 +4,20 @@ import { Heart, Search, X } from 'lucide-react';
 import { ASSETS } from '../data';
 import { MobileMenu } from './MobileMenu';
 import { TransitionLink } from './TransitionLink';
+import { DesktopNav } from './NavMenu';
 
 export function Navbar({ forceDarkText = false }: { forceDarkText?: boolean } = {}) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMenuAnimating, setIsMenuAnimating] = useState(false);
+  // True while a desktop mega-menu panel is open — solidifies the bar so the
+  // panel reads cleanly even over the transparent hero.
+  const [isNavMenuOpen, setIsNavMenuOpen] = useState(false);
   const isInitialRender = useRef(true);
 
   const useDarkText = forceDarkText || isScrolled || isMenuOpen;
+  const isSolid = isScrolled || isMenuOpen || isMenuAnimating;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,7 +44,7 @@ export function Navbar({ forceDarkText = false }: { forceDarkText?: boolean } = 
         initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.2 }}
-      className={`fixed top-0 left-0 w-full z-[60] transition-all duration-500 ${(isScrolled || isMenuOpen || isMenuAnimating) ? 'bg-white py-3 md:py-4' : 'bg-transparent py-4 md:py-8'} ${isScrolled && !isMenuOpen && !isMenuAnimating ? 'shadow-sm' : ''}`}
+      className={`fixed top-0 left-0 w-full z-[60] transition-all duration-500 ${isSolid ? 'bg-white' : 'bg-transparent'} ${isScrolled ? 'py-3 md:py-4' : 'pt-4 md:pt-8 pb-3 md:pb-4'} ${isScrolled && !isMenuOpen && !isMenuAnimating ? 'shadow-sm' : ''}`}
     >
       <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 flex items-center justify-between">
         
@@ -52,13 +57,8 @@ export function Navbar({ forceDarkText = false }: { forceDarkText?: boolean } = 
           />
         </TransitionLink>
           
-        {/* Desktop Links */}
-        <div className="hidden md:flex items-center space-x-8">
-          <a href="#collections" className={`text-sm font-medium transition-colors ${!useDarkText ? 'text-white hover:text-white/70' : 'text-earth-dark hover:text-earth'}`}>Koleksiyonlar</a>
-          <a href="#featured" className={`text-sm font-medium transition-colors ${!useDarkText ? 'text-white hover:text-white/70' : 'text-earth-dark hover:text-earth'}`}>Öne Çıkanlar</a>
-          <a href="#showroom" className={`text-sm font-medium transition-colors ${!useDarkText ? 'text-white hover:text-white/70' : 'text-earth-dark hover:text-earth'}`}>Mağaza</a>
-          <a href="#faq" className={`text-sm font-medium transition-colors ${!useDarkText ? 'text-white hover:text-white/70' : 'text-earth-dark hover:text-earth'}`}>SSS</a>
-        </div>
+        {/* Desktop Links + mega-menus */}
+        <DesktopNav useDarkText={useDarkText} onOpenChange={setIsNavMenuOpen} />
         
         {/* Icons */}
         <div className={`flex items-center gap-1 sm:gap-2 ${!useDarkText ? 'text-white' : 'text-earth-dark'}`}>
@@ -83,8 +83,8 @@ export function Navbar({ forceDarkText = false }: { forceDarkText?: boolean } = 
                   </motion.div>
                 )}
               </AnimatePresence>
-              <button 
-                onClick={() => setIsSearchOpen(!isSearchOpen)} 
+              <button
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
                 className="p-2 hover:bg-black/10 rounded-full transition-colors cursor-pointer"
               >
                 {isSearchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}

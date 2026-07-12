@@ -25,10 +25,20 @@ export function Reviews({ reviews = REVIEWS }: { reviews?: ReviewCard[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!mounted || isHovered || expandedImage || reviews.length <= 1) return;
+    const interval = setInterval(() => {
+      const nextIndex = (activeIndex + 1) % reviews.length;
+      scrollToIndex(nextIndex);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [mounted, isHovered, expandedImage, activeIndex, reviews.length]);
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
@@ -154,6 +164,10 @@ export function Reviews({ reviews = REVIEWS }: { reviews?: ReviewCard[] }) {
 
         <div
           ref={scrollContainerRef}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          onTouchStart={() => setIsHovered(true)}
+          onTouchEnd={() => setIsHovered(false)}
           className="flex gap-6 md:gap-8 lg:gap-12 overflow-x-auto snap-x snap-mandatory pt-4 md:pt-8 pb-12 md:pb-20 -mx-4 px-4 scroll-pl-4 md:-mx-6 md:px-6 md:scroll-pl-6 lg:-mx-10 lg:px-10 lg:scroll-pl-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         >
           {reviews.map((review, index) => {
@@ -162,10 +176,10 @@ export function Reviews({ reviews = REVIEWS }: { reviews?: ReviewCard[] }) {
             return (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 40, scale: 0.95 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.5, delay: index * 0.1, ease: "easeOut" }}
+                transition={{ duration: 0.6, type: "spring", bounce: 0.3 }}
                 className="w-[85vw] sm:w-[60vw] md:w-[calc((100%-4rem)/3)] lg:w-[calc((100%-6rem)/3)] flex-shrink-0 snap-center md:snap-start"
               >
                 <div className={`h-full transition-opacity duration-500 ${index === activeIndex ? 'opacity-100' : 'opacity-40 md:opacity-100'}`}>
@@ -195,7 +209,7 @@ export function Reviews({ reviews = REVIEWS }: { reviews?: ReviewCard[] }) {
                                     type: "spring",
                                     stiffness: 300,
                                     damping: 20,
-                                    delay: index * 0.1 + i * 0.06 + 0.3
+                                    delay: i * 0.06 + 0.3
                                   }}
                                 >
                                   <Star
@@ -230,22 +244,32 @@ export function Reviews({ reviews = REVIEWS }: { reviews?: ReviewCard[] }) {
           })}
         </div>
 
-        {/* Mobile pagination dots — position/count feedback the arrows can't give on touch.
-          Each button is a 44px-tall tap target; the visible dot inside stays small. */}
+        {/* Mobile pagination dots */}
         <div className="flex md:hidden items-center justify-center mt-4">
-          {reviews.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => scrollToIndex(i)}
-              aria-label={`${i + 1}. yoruma git`}
-              aria-current={i === activeIndex}
-              className="group flex h-11 w-7 items-center justify-center"
-            >
-              <span
-                className={`h-2 rounded-full transition-all duration-300 ${i === activeIndex ? 'w-6 bg-earth' : 'w-2 bg-earth/25 group-hover:bg-earth/40'}`}
-              />
-            </button>
-          ))}
+          {(() => {
+            const MAX_DOTS = 7;
+            const groupSize = Math.max(1, Math.ceil(reviews.length / MAX_DOTS));
+            const dotCount = Math.ceil(reviews.length / groupSize);
+            const activeDot = Math.floor(activeIndex / groupSize);
+
+            if (dotCount <= 1) return null;
+
+            return [...Array(dotCount)].map((_, i) => (
+              <button
+                key={i}
+                onClick={() => scrollToIndex(Math.min(i * groupSize, reviews.length - 1))}
+                aria-label={`${i + 1}. yoruma git`}
+                aria-current={i === activeDot}
+                className="group flex h-11 w-7 items-center justify-center"
+              >
+                <span
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    i === activeDot ? 'w-6 bg-earth' : 'w-2 bg-earth/25 group-hover:bg-earth/40'
+                  }`}
+                />
+              </button>
+            ));
+          })()}
         </div>
       </div>
 

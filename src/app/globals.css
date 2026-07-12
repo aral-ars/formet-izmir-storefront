@@ -62,8 +62,8 @@
 
 /* Primary Glass: Soft, highly frosted cloud-like glass. No sharp borders. */
 .glass {
-  @apply bg-white/70 backdrop-blur-2xl shadow-[0_8px_30px_rgba(0,0,0,0.04)];
-  -webkit-backdrop-filter: blur(32px);
+  @apply bg-white/85 backdrop-blur-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)];
+  -webkit-backdrop-filter: blur(48px);
 }
 
 /* Subtle Glass: Lighter frost, still very soft edges. */
